@@ -1,0 +1,461 @@
+<?php
+
+namespace App\Http\Controllers\API\Member;
+
+use App\Http\Controllers\BaseController;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Member\MemberRequest;
+use App\Http\Resources\Member\MemberResource;
+use App\Models\Member;
+use Exception;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+
+/**
+ * @OA\Tag(
+ *     name="Membres",
+ *     description="API Endpoints pour la gestion des membres"
+ * )
+ */
+class MemberController extends BaseController
+{
+    /**
+     * @OA\Get(
+     *     path="/api/v1/membres",
+     *     operationId="indexMembres",
+     *     tags={"Membres"},
+     *     summary="Récupérer tous les membres",
+     *     description="Récupérer une liste paginée des membres avec recherche optionnelle",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Numéro de page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Nombre d'éléments par page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="q",
+     *         in="query",
+     *         description="Terme de recherche pour nom, prénom, statut marital, profil professionnel, résidence, téléphone et email",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Membres récupérés avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Enfilers retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="items", type="array", @OA\Items(
+     *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                     @OA\Property(property="slug", type="string", example="MEM-12345678-1234-1234-1234-123456789abc"),
+     *                     @OA\Property(property="first_name", type="string", example="Jean"),
+     *                     @OA\Property(property="last_name", type="string", example="Dupont"),
+     *                     @OA\Property(property="email", type="string", example="jean.dupont@example.com"),
+     *                     @OA\Property(property="phone", type="string", example="+33123456789"),
+     *                     @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
+     *                     @OA\Property(property="marital_status", type="string", example="Marié"),
+     *                     @OA\Property(property="professional_profile", type="string", example="Ingénieur"),
+     *                     @OA\Property(property="residence", type="string", example="Paris, France"),
+     *                     @OA\Property(property="is_benevolent", type="boolean", example=true),
+     *                     @OA\Property(property="benevolent_experience", type="string", nullable=true, example="5 ans d'expérience"),
+     *                     @OA\Property(property="benevolent_type", type="object", nullable=true,
+     *                         @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                         @OA\Property(property="name", type="string", example="Bénévole régulier"),
+     *                         @OA\Property(property="description", type="string", example="Bénévole qui s'engage régulièrement")
+     *                     ),
+     *                     @OA\Property(property="is_active", type="boolean", example=true),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
+     *                 )),
+     *                 @OA\Property(property="pagination", type="object",
+     *                     @OA\Property(property="total", type="integer", example=50),
+     *                     @OA\Property(property="per_page", type="integer", example=10),
+     *                     @OA\Property(property="current_page", type="integer", example=1),
+     *                     @OA\Property(property="last_page", type="integer", example=5)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function index(Request $request)
+    {
+        // Recherche
+        $query = Member::query()->with('benevolent_type');
+
+        // Filtrage par status
+        // $status = $request->get('status');
+
+        // if ($status === 'activated') {
+        //     $query->where('is_active', 1);
+        // } elseif ($status === 'desactivated') {
+        //     $query->where('is_active', 0);
+        // } else {
+        //     $query->where('is_active', 1); // Par défaut, on ne retourne que les activés
+        // }
+        if ($request->has('q') && $request->q) {
+            $q = $request->q;
+            $query->where(function ($subQuery) use ($q) {
+                $subQuery->where('first_name', 'like', "%$q%")
+                    ->orWhere('last_name', 'like', "%$q%")
+                    ->orWhere('marital_status', 'like', "%$q%")
+                    ->orWhere('professional_profile', 'like', "%$q%")
+                    ->orWhere('residence', 'like', "%$q%")
+                    ->orWhere('phone', 'like', "%$q%")
+                    ->orWhere('email', 'like', "%$q%");
+            });
+        }
+
+        // Pagination
+        $perPage = $request->get('per_page', 10);
+
+        $enfilers = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return $this->sendResponse(
+            [
+                'items' => MemberResource::collection($enfilers),
+
+                'pagination' => [
+                    'total' => $enfilers->total(),
+                    'per_page' => $enfilers->perPage(),
+                    'current_page' => $enfilers->currentPage(),
+                    'last_page' => $enfilers->lastPage(),
+                ]
+
+            ],
+            'Enfilers retrieved successfully'
+        );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/membres/{member}",
+     *     operationId="showMembre",
+     *     tags={"Membres"},
+     *     summary="Récupérer un membre spécifique",
+     *     description="Récupérer les détails d'un membre par son ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="member",
+     *         in="path",
+     *         description="ID du membre",
+     *         required=true,
+     *         @OA\Schema(type="string", example="01jywbsemp4vdwx02h17z5mgah")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Membre récupéré avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Member retrieved successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="items", type="object",
+     *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                     @OA\Property(property="slug", type="string", example="MEM-12345678-1234-1234-1234-123456789abc"),
+     *                     @OA\Property(property="first_name", type="string", example="Jean"),
+     *                     @OA\Property(property="last_name", type="string", example="Dupont"),
+     *                     @OA\Property(property="email", type="string", example="jean.dupont@example.com"),
+     *                     @OA\Property(property="phone", type="string", example="+33123456789"),
+     *                     @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
+     *                     @OA\Property(property="marital_status", type="string", example="Marié"),
+     *                     @OA\Property(property="professional_profile", type="string", example="Ingénieur"),
+     *                     @OA\Property(property="residence", type="string", example="Paris, France"),
+     *                     @OA\Property(property="is_benevolent", type="boolean", example=true),
+     *                     @OA\Property(property="benevolent_experience", type="string", nullable=true, example="5 ans d'expérience"),
+     *                     @OA\Property(property="benevolent_type", type="object", nullable=true,
+     *                         @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                         @OA\Property(property="name", type="string", example="Bénévole régulier"),
+     *                         @OA\Property(property="description", type="string", example="Bénévole qui s'engage régulièrement")
+     *                     ),
+     *                     @OA\Property(property="is_active", type="boolean", example=true),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Membre non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Member not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function show(Member $member)
+    {
+        $member->load('benevolent_type');
+
+        return $this->sendResponse(
+            ['items' => new MemberResource($member)],
+            'Member retrieved successfully'
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/membres",
+     *     operationId="storeMembre",
+     *     tags={"Membres"},
+     *     summary="Créer un nouveau membre",
+     *     description="Créer un nouveau membre et envoyer un email de confirmation",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"first_name", "last_name", "email", "phone"},
+     *             @OA\Property(property="first_name", type="string", example="Jean", description="Prénom du membre"),
+     *             @OA\Property(property="last_name", type="string", example="Dupont", description="Nom de famille du membre"),
+     *             @OA\Property(property="email", type="string", format="email", example="jean.dupont@example.com", description="Email du membre"),
+     *             @OA\Property(property="phone", type="string", example="+33123456789", description="Téléphone du membre"),
+     *             @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01", description="Date de naissance"),
+     *             @OA\Property(property="marital_status", type="string", example="Marié", description="Statut marital"),
+     *             @OA\Property(property="professional_profile", type="string", example="Ingénieur", description="Profil professionnel"),
+     *             @OA\Property(property="residence", type="string", example="Paris, France", description="Lieu de résidence"),
+     *             @OA\Property(property="is_benevolent", type="boolean", example=true, description="Est-ce un bénévole ?"),
+     *             @OA\Property(property="benevolent_experience", type="string", nullable=true, example="5 ans d'expérience", description="Expérience bénévole"),
+     *             @OA\Property(property="benevolent_type_id", type="string", nullable=true, example="01jywbsemp4vdwx02h17z5mgah", description="ID du type de bénévole")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Membre créé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Member created successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                 @OA\Property(property="slug", type="string", example="MEM-12345678-1234-1234-1234-123456789abc"),
+     *                 @OA\Property(property="first_name", type="string", example="Jean"),
+     *                 @OA\Property(property="last_name", type="string", example="Dupont"),
+     *                 @OA\Property(property="email", type="string", example="jean.dupont@example.com"),
+     *                 @OA\Property(property="phone", type="string", example="+33123456789"),
+     *                 @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
+     *                 @OA\Property(property="marital_status", type="string", example="Marié"),
+     *                 @OA\Property(property="professional_profile", type="string", example="Ingénieur"),
+     *                 @OA\Property(property="residence", type="string", example="Paris, France"),
+     *                 @OA\Property(property="is_benevolent", type="boolean", example=true),
+     *                 @OA\Property(property="benevolent_experience", type="string", nullable=true, example="5 ans d'expérience"),
+     *                 @OA\Property(property="benevolent_type", type="object", nullable=true,
+     *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                     @OA\Property(property="name", type="string", example="Bénévole régulier"),
+     *                     @OA\Property(property="description", type="string", example="Bénévole qui s'engage régulièrement")
+     *                 ),
+     *                 @OA\Property(property="is_active", type="boolean", example=true),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function store(MemberRequest $request)
+    {
+        $data = $request->all();
+
+        if ($data['is_benevolent'] == false) {
+            $data['benevolent_experience'] = null;
+        }
+
+        $data['slug'] = 'MEM-' . Str::uuid();
+        try {
+            $member = Member::create($data);
+
+            // Mail::to($member->email))->send(new MemberMail($member));
+            return $this->sendResponse(new MemberResource($member), 'Member created successfully');
+        } catch (Exception $th) {
+            Log::info("Error creating member: " . $th->getMessage());
+            return $this->sendError('Error creating member');
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/membres/{member}",
+     *     operationId="updateMembre",
+     *     tags={"Membres"},
+     *     summary="Modifier un membre",
+     *     description="Modifier les informations d'un membre existant",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="member",
+     *         in="path",
+     *         description="ID du membre",
+     *         required=true,
+     *         @OA\Schema(type="string", example="01jywbsemp4vdwx02h17z5mgah")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="first_name", type="string", example="Jean", description="Prénom du membre"),
+     *             @OA\Property(property="last_name", type="string", example="Dupont", description="Nom de famille du membre"),
+     *             @OA\Property(property="email", type="string", format="email", example="jean.dupont@example.com", description="Email du membre"),
+     *             @OA\Property(property="phone", type="string", example="+33123456789", description="Téléphone du membre"),
+     *             @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01", description="Date de naissance"),
+     *             @OA\Property(property="marital_status", type="string", example="Marié", description="Statut marital"),
+     *             @OA\Property(property="professional_profile", type="string", example="Ingénieur", description="Profil professionnel"),
+     *             @OA\Property(property="residence", type="string", example="Paris, France", description="Lieu de résidence"),
+     *             @OA\Property(property="is_benevolent", type="boolean", example=true, description="Est-ce un bénévole ?"),
+     *             @OA\Property(property="benevolent_experience", type="string", nullable=true, example="5 ans d'expérience", description="Expérience bénévole"),
+     *             @OA\Property(property="benevolent_type_id", type="string", nullable=true, example="01jywbsemp4vdwx02h17z5mgah", description="ID du type de bénévole")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Membre modifié avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Member updated successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                 @OA\Property(property="slug", type="string", example="MEM-12345678-1234-1234-1234-123456789abc"),
+     *                 @OA\Property(property="first_name", type="string", example="Jean"),
+     *                 @OA\Property(property="last_name", type="string", example="Dupont"),
+     *                 @OA\Property(property="email", type="string", example="jean.dupont@example.com"),
+     *                 @OA\Property(property="phone", type="string", example="+33123456789"),
+     *                 @OA\Property(property="date_of_birth", type="string", format="date", example="1990-01-01"),
+     *                 @OA\Property(property="marital_status", type="string", example="Marié"),
+     *                 @OA\Property(property="professional_profile", type="string", example="Ingénieur"),
+     *                 @OA\Property(property="residence", type="string", example="Paris, France"),
+     *                 @OA\Property(property="is_benevolent", type="boolean", example=true),
+     *                 @OA\Property(property="benevolent_experience", type="string", nullable=true, example="5 ans d'expérience"),
+     *                 @OA\Property(property="benevolent_type", type="object", nullable=true,
+     *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                     @OA\Property(property="name", type="string", example="Bénévole régulier"),
+     *                     @OA\Property(property="description", type="string", example="Bénévole qui s'engage régulièrement")
+     *                 ),
+     *                 @OA\Property(property="is_active", type="boolean", example=true),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Membre non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Member not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function update(MemberRequest $request, Member $member)
+    {
+        $data = $request->all();
+        try {
+            $member->update($data);
+            Log::info("Member updated successfully");
+            return $this->sendResponse(new MemberResource($member), 'Member updated successfully');
+        } catch (Exception $th) {
+            Log::info("Error updating member: " . $th->getMessage());
+            return $this->sendError('Error updating member');
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/membres/{member}",
+     *     operationId="desactivateMembre",
+     *     tags={"Membres"},
+     *     summary="Désactiver un membre",
+     *     description="Supprimer un membre en définissant is_active à false",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="member",
+     *         in="path",
+     *         description="ID du membre",
+     *         required=true,
+     *         @OA\Schema(type="string", example="01jywbsemp4vdwx02h17z5mgah")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Membre désactivé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Member deleted successfully"),
+     *             @OA\Property(property="data", type="array", @OA\Items())
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Membre non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Member not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function desactivate(Member $member)
+    {
+        try {
+            $member->is_active = false;
+            $member->save();
+
+            //    Mail::to($member->email)->send(new MemberMail($member));
+
+            return $this->sendResponse([], 'Member deleted successfully');
+        } catch (Exception $th) {
+            Log::info("Error deleting member: " . $th->getMessage());
+            return $this->sendError('Error deleting member');
+        }
+    }
+}
