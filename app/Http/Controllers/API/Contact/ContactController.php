@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contact\ContactFormRequest;
 use App\Http\Resources\Contact\ContactResource;
+use App\Mail\ContactNotification;
 use App\Models\Contact;
 use Exception;
 use Illuminate\Http\Request;
@@ -189,9 +190,9 @@ class ContactController extends BaseController
         $data['slug'] = 'CONT-'. Str::uuid();      
          try {
             $contact = Contact::create($data);
-
-            // Mail::to(env('MAIL_FROM_ADDRESS'))->send(new ContactMail($contact));
-
+           
+             Mail::to(env('MAIL_FROM_ADDRESS'))->send(new ContactNotification($contact));
+             Log::info('email sent to ' . env('MAIL_FROM_ADDRESS'));
             return $this->sendResponse(new ContactResource($contact), 'Contact created successfully');
         } catch (Exception $th) {
             Log::info("Error creating contact: " . $th->getMessage());

@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Contact;
+use App\Models\Member;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,20 +10,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ContactNotification extends Mailable
+class MemberNotification extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-
-     public $contact;
-
-    public function __construct(Contact $contact)
+    public $member;
+    public $isAdmin;
+    public function __construct(Member $member, $isAdmin = false)
     {
         //
-        $this->contact = $contact;
+        $this->member = $member;
+        $this->isAdmin = $isAdmin;
     }
 
     /**
@@ -32,7 +32,7 @@ class ContactNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nouveau message depuis le formulaire de contact',
+            subject: $this->isAdmin ? '🎉 Nouveau membre sur ' . config('app.name') : '🙏 Merci pour votre inscription !',
         );
     }
 
@@ -42,13 +42,10 @@ class ContactNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contact_notification',
+            view: 'emails.membre_notification',
             with: [
-                'name' => $this->contact->name,
-                'email' => $this->contact->email,
-                'subject' => $this->contact->subject,
-                'phone' => $this->contact->phone,
-                'messageContent' => $this->contact->message
+                'member' => $this->member,
+                'isAdmin' => $this->isAdmin
             ]
         );
     }

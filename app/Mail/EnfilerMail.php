@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Contact;
+use App\Models\Enfiler;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,20 +10,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ContactNotification extends Mailable
+class EnfilerMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-
-     public $contact;
-
-    public function __construct(Contact $contact)
+    public $enfiler;
+    public $isAdmin;
+    public function __construct(Enfiler $enfiler, $isAdmin = false)
     {
         //
-        $this->contact = $contact;
+        $this->enfiler = $enfiler;
+        $this->isAdmin = $isAdmin;
     }
 
     /**
@@ -32,7 +32,7 @@ class ContactNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nouveau message depuis le formulaire de contact',
+            subject: $this->isAdmin ? '🎉 Nouveau don reçu sur ' . config('app.name') : '🙏 Merci pour votre don !',
         );
     }
 
@@ -42,13 +42,10 @@ class ContactNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contact_notification',
+            view: 'emails.don_notification',
             with: [
-                'name' => $this->contact->name,
-                'email' => $this->contact->email,
-                'subject' => $this->contact->subject,
-                'phone' => $this->contact->phone,
-                'messageContent' => $this->contact->message
+                'enfiler' => $this->enfiler,
+                'isAdmin' => $this->isAdmin
             ]
         );
     }

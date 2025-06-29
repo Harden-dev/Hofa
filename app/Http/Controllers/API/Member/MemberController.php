@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Member\MemberRequest;
 use App\Http\Resources\Member\MemberResource;
+use App\Mail\MemberNotification;
 use App\Models\Member;
 use Exception;
 use Illuminate\Support\Str;
@@ -296,7 +297,12 @@ class MemberController extends BaseController
         try {
             $member = Member::create($data);
 
-            // Mail::to($member->email))->send(new MemberMail($member));
+            // mail pour informer le membre que son compte a bien été créé
+            Mail::to($member->email)->send(new MemberNotification($member));
+
+            // mail pour informer l'admin qu'il y a un nouveau membre
+            Mail::to(env('MAIL_FROM_ADDRESS'))->send(new MemberNotification($member, true));
+
             return $this->sendResponse(new MemberResource($member), 'Member created successfully');
         } catch (Exception $th) {
             Log::info("Error creating member: " . $th->getMessage());

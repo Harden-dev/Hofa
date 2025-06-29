@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Enfiler\EnfilerFormRequest;
 use App\Http\Resources\Dons\EnfilerResource;
+use App\Mail\EnfilerMail;
 use App\Models\Enfiler;
 use Exception;
 use Illuminate\Http\Request;
@@ -204,7 +205,13 @@ class EnfilerController extends BaseController
         try {
             $enfiler = Enfiler::create($data);
 
-            // Mail::to($enfiler->email)->send(new EnfilerMail($enfiler));
+            // Mail de remerciement au donateur
+            Mail::to($enfiler->email)->send(new EnfilerMail($enfiler));
+            Log::info('Email sent to '. $enfiler->email);
+            // mail de notification a l'admin
+
+            Mail::to(env('MAIL_FROM_ADDRESS'))->send(new EnfilerMail($enfiler, true));
+            Log::info('email sent to the owner');
 
             return $this->sendResponse(new EnfilerResource($enfiler), 'Don created successfully');
         } catch (Exception $th) {
