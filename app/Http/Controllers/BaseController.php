@@ -65,6 +65,21 @@ class BaseController extends Controller
         return response()->json($response, $code);
     }
 
+    // error sur unicité d'un mail 
+    public function sendUniqueEmailError($error, $errorMessages = [], $code = 400)
+    {
+        $response = [
+            'success' => false,
+            'message' => $error,
+        ];
+
+        if (!empty($errorMessages)) {
+            $response['data'] = $errorMessages;
+        }
+
+        return response()->json($response, $code);
+    }
+
     public function sendServerError($error, $errorMessages = [], $code = 500)
     {
         $response = [

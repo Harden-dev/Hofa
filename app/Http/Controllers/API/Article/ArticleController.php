@@ -114,7 +114,7 @@ class ArticleController extends BaseController
             ]);
         }
 
-        // Galerie (facultatif)
+        // Galerie
         if ($request->hasFile('gallery')) {
             foreach ($request->file('gallery') as $i => $image) {
                 $path = $image->store('article_gallery', 'public');

@@ -45,7 +45,7 @@ class AuthController extends Controller
      *         type="string",
      *         description="Nom de famille de l'utilisateur"
      *     ),
-     *   
+     *
      *     @OA\Property(
      *         property="password",
      *         type="string",
@@ -64,7 +64,7 @@ class AuthController extends Controller
      */
     /**
      * @OA\Post(
-     *     path="/login",
+     *     path="/api/v1/login",
      *     tags={"Auth"},
      *     summary="Obtenir un JWT via les identifiants fournis",
      *     @OA\RequestBody(
@@ -109,14 +109,14 @@ class AuthController extends Controller
      */
     /**
      * @OA\Get(
-     *     path="/me",
+     *     path="/api/v1/me",
      *     tags={"Auth"},
      *     summary="Obtenir les informations de l'utilisateur connecté",
      *     security={{"Bearer": {}}},
      *     @OA\Response(
      *         response=200,
      *         description="Informations de l'utilisateur récupérées avec succès",
-     *       
+     *
      *     ),
      *     @OA\Response(
      *         response=401,
@@ -147,7 +147,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/logout",
+     *     path="/api/v1/logout",
      *     tags={"Auth"},
      *     summary="Déconnexion de l'utilisateur",
      *     @OA\Response(
@@ -173,7 +173,7 @@ class AuthController extends Controller
      */
     /**
      * @OA\Post(
-     *     path="/refresh",
+     *     path="/api/v1/refresh",
      *     tags={"Auth"},
      *     summary="Rafraîchir le token JWT",
      *     @OA\Response(
@@ -215,7 +215,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/change-password",
+     *     path="/api/v1/change-password",
      *     tags={"Auth"},
      *     summary="Changer le mot de passe de l'utilisateur",
      * security={{"Bearer": {}}},

@@ -5,6 +5,7 @@ use App\Http\Controllers\API\Auth\AuthController;
 use App\Http\Controllers\API\Contact\ContactController;
 use App\Http\Controllers\API\Dons\EnfilerController;
 use App\Http\Controllers\API\Member\MemberController;
+use App\Http\Controllers\API\NewLetter\NewLetterController;
 use App\Http\Controllers\API\TypeDons\EnfilerTypeController;
 use App\Http\Controllers\API\User\UserController;
 use App\Http\Controllers\TypeBenevole\TypeBenevoleController;
@@ -77,6 +78,9 @@ Route::prefix('v1')->group(function () {
         Route::put('/articles/images/{slug}', [ArticleController::class, 'updateImage']);
         Route::delete('/articles/images/{slug}', [ArticleController::class, 'deleteImage']);
 
-
+        // new letter route
+        Route::get('new-letters', [NewLetterController::class, 'index']);
+        Route::post('new-letters', [NewLetterController::class, 'store']);
+        Route::delete('new-letters/{newLetter}', [NewLetterController::class, 'desactivate']);
     });
 });
