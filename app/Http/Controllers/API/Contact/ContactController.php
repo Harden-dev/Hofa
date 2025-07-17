@@ -70,7 +70,7 @@ class ContactController extends BaseController
      *                     @OA\Property(property="slug", type="string", example="CONT-12345678-1234-1234-1234-123456789abc"),
      *                     @OA\Property(property="name", type="string", example="John Doe"),
      *                     @OA\Property(property="email", type="string", example="john@example.com"),
-     *                     @OA\Property(property="phone", type="string", nullable=true, example="+1234567890"),
+     *
      *                     @OA\Property(property="message", type="string", example="Contact message content"),
      *                     @OA\Property(property="is_active", type="boolean", example=true),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
@@ -166,7 +166,8 @@ class ContactController extends BaseController
      *                 @OA\Property(property="slug", type="string", example="CONT-12345678-1234-1234-1234-123456789abc"),
      *                 @OA\Property(property="name", type="string", example="John Doe"),
      *                 @OA\Property(property="email", type="string", example="john@example.com"),
-     *                 @OA\Property(property="phone", type="string", nullable=true, example="+1234567890"),
+     *                 @OA\Property(property="subject", type="string", example="Hello, I would like to get more information about your services."),
+     *
      *                 @OA\Property(property="message", type="string", example="Hello, I would like to get more information about your services."),
      *                 @OA\Property(property="is_active", type="boolean", example=true),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
@@ -187,10 +188,10 @@ class ContactController extends BaseController
     public function store(ContactFormRequest $request)
     {
         $data = $request->all();
-        $data['slug'] = 'CONT-'. Str::uuid();      
+        $data['slug'] = 'CONT-'. Str::uuid();
          try {
             $contact = Contact::create($data);
-           
+
              Mail::to(env('MAIL_FROM_ADDRESS'))->send(new ContactNotification($contact));
              Log::info('email sent to ' . env('MAIL_FROM_ADDRESS'));
             return $this->sendResponse(new ContactResource($contact), 'Contact created successfully');
