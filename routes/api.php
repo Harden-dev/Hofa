@@ -48,12 +48,18 @@ Route::prefix('v1')->group(function () {
         Route::get('dons/{enfiler}', [EnfilerController::class, 'show']);
         Route::put('dons/{enfiler}', [EnfilerController::class, 'update']);
         Route::delete('dons/{enfiler}', [EnfilerController::class, 'desactivate']);
+        Route::patch('dons/{enfiler}/activate', [EnfilerController::class, 'activate']);
+        Route::patch('dons/{enfiler}/toggle-active', [EnfilerController::class, 'toggleActive']);
 
         // member route
         Route::get('membres', [MemberController::class, 'index']);
         Route::get('membres/{member}', [MemberController::class, 'show']);
         Route::put('membres/{member}', [MemberController::class, 'update']);
         Route::delete('membres/{member}', [MemberController::class, 'desactivate']);
+        Route::patch('membres/{member}/activate', [MemberController::class, 'activate']);
+        Route::patch('membres/{member}/toggle-volunteer', [MemberController::class, 'toggleVolunteer']);
+        Route::patch('membres/{member}/approve', [MemberController::class, 'approve']);
+        Route::patch('membres/{member}/reject', [MemberController::class, 'reject']);
 
         // type benevole route
 
@@ -70,7 +76,7 @@ Route::prefix('v1')->group(function () {
         Route::put('users/{user}', [UserController::class, 'update']);
         Route::delete('users/{user}', [UserController::class, 'desactivate']);
 
-        // article 
+        // article
 
         Route::post('/articles', [ArticleController::class, 'store']);
         Route::put('/articles/{article}', [ArticleController::class, 'update']);

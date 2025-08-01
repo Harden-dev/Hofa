@@ -19,11 +19,17 @@ class MemberNotification extends Mailable
      */
     public $member;
     public $isAdmin;
-    public function __construct(Member $member, $isAdmin = false)
+    public $type;
+    public $customMessage;
+    public $reason;
+
+    public function __construct(Member $member, $isAdmin = false, $type = 'created', $customMessage = null, $reason = null)
     {
-        //
         $this->member = $member;
         $this->isAdmin = $isAdmin;
+        $this->type = $type;
+        $this->customMessage = $customMessage;
+        $this->reason = $reason;
     }
 
     /**
@@ -31,8 +37,20 @@ class MemberNotification extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = match($this->type) {
+            'approved' => $this->isAdmin
+                ? '✅ Membre approuvé sur ' . config('app.name')
+                : '✅ Votre demande d\'adhésion a été approuvée !',
+            'rejected' => $this->isAdmin
+                ? '❌ Membre rejeté sur ' . config('app.name')
+                : '❌ Réponse à votre demande d\'adhésion',
+            default => $this->isAdmin
+                ? '🎉 Nouveau membre sur ' . config('app.name')
+                : '🙏 Merci pour votre inscription !',
+        };
+
         return new Envelope(
-            subject: $this->isAdmin ? '🎉 Nouveau membre sur ' . config('app.name') : '🙏 Merci pour votre inscription !',
+            subject: $subject,
         );
     }
 
@@ -41,11 +59,20 @@ class MemberNotification extends Mailable
      */
     public function content(): Content
     {
+        $view = match($this->type) {
+            'approved' => 'emails.member_approved',
+            'rejected' => 'emails.member_rejected',
+            default => 'emails.membre_notification',
+        };
+
         return new Content(
-            view: 'emails.membre_notification',
+            view: $view,
             with: [
                 'member' => $this->member,
-                'isAdmin' => $this->isAdmin
+                'isAdmin' => $this->isAdmin,
+                'type' => $this->type,
+                'customMessage' => $this->customMessage,
+                'reason' => $this->reason
             ]
         );
     }

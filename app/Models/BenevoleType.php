@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class BenevoleType extends Model
 {
-    //
     use HasUlids;
 
     protected $table = 'benevole_types';
@@ -18,8 +17,8 @@ class BenevoleType extends Model
         'description',
     ];
 
-    public function members()
-    {
-        return $this->hasMany(Member::class);
-    }
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Dons;
 
-use App\Http\Resources\TypeDons\EnfilerTypeResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,17 +16,24 @@ class EnfilerResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'slug' => $this->slug,
+            'type' => $this->type,
             'name' => $this->name,
+            'bossName' => $this->bossName,
+            'donationType' => $this->donationType,
             'phone' => $this->phone,
             'email' => $this->email,
             'motivation' => $this->motivation,
             'is_active' => $this->is_active,
-            'type_dons' => $this->whenLoaded('type_enfiler', function() {
-                return new EnfilerTypeResource($this->type_enfiler);
-            }),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
 
-            
-            
+            // Accesseurs calculés
+            'full_name' => $this->full_name,
+            'display_name' => $this->display_name,
+            'status_text' => $this->status_text,
+            'donation_type_text' => $this->donation_type_text,
+            'type_text' => $this->type_text,
         ];
     }
 }

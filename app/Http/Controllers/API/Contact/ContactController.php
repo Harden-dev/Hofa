@@ -151,6 +151,7 @@ class ContactController extends BaseController
      *             required={"name", "email", "message"},
      *             @OA\Property(property="name", type="string", example="John Doe", description="Contact name"),
      *             @OA\Property(property="email", type="string", format="email", example="john@example.com", description="Contact email"),
+     *             @OA\Property(property="subject", type="string", nullable=true, example="Hello, I would like to get more information about your services.", description="Contact subject"),
      *             @OA\Property(property="phone", type="string", nullable=true, example="+1234567890", description="Contact phone number"),
      *             @OA\Property(property="message", type="string", example="Hello, I would like to get more information about your services.", description="Contact message")
      *         )
@@ -188,12 +189,12 @@ class ContactController extends BaseController
     public function store(ContactFormRequest $request)
     {
         $data = $request->all();
-        $data['slug'] = 'CONT-'. Str::uuid();
-         try {
+        $data['slug'] = 'CONT-' . Str::uuid();
+        try {
             $contact = Contact::create($data);
 
-             Mail::to(env('MAIL_FROM_ADDRESS'))->send(new ContactNotification($contact));
-             Log::info('email sent to ' . env('MAIL_FROM_ADDRESS'));
+            Mail::to(env('MAIL_FROM_ADDRESS'))->cc('christyao1299@gmail.com')->send(new ContactNotification($contact));
+            Log::info('email sent to ' . env('MAIL_FROM_ADDRESS'));
             return $this->sendResponse(new ContactResource($contact), 'Contact created successfully');
         } catch (Exception $th) {
             Log::info("Error creating contact: " . $th->getMessage());

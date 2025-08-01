@@ -14,14 +14,17 @@ return new class extends Migration
         Schema::create('enfilers', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('slug')->unique();
-            $table->ulid('enfiler_type_id');
-            $table->string('name');
+            $table->enum('type', ['individual', 'company']);
+           // $table->ulid('enfiler_type_id');
+            $table->string('name')->nullable();
+            $table->string('bossName')->nullable();
+            $table->string('donationType');
             $table->string('phone');
             $table->string('email');
             $table->string('motivation')->nullable();
             $table->boolean('is_active')->default(true);
 
-            $table->foreign('enfiler_type_id')->references('id')->on('enfiler_types');
+           // $table->foreign('enfiler_type_id')->references('id')->on('enfiler_types');
             $table->timestamps();
         });
     }

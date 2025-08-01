@@ -15,6 +15,7 @@ class ArticleTranslation extends Model
         'locale',
         'title',
         'content',
+        'description',
         'article_id',
     ];
 

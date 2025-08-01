@@ -811,13 +811,13 @@
                 ]
             }
         },
-        "/login": {
+        "/api/v1/login": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Obtenir un JWT via les identifiants fournis",
-                "operationId": "632c4cfea66806227f1f6031fbc0e144",
+                "operationId": "f2f97f1efa7188a654418caae929ae05",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -879,13 +879,13 @@
                 }
             }
         },
-        "/me": {
+        "/api/v1/me": {
             "get": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Obtenir les informations de l'utilisateur connecté",
-                "operationId": "2829c21dfcdb0f6899c49f6d45af33de",
+                "operationId": "9befd101f5d5a41102012337a3beec7a",
                 "responses": {
                     "200": {
                         "description": "Informations de l'utilisateur récupérées avec succès"
@@ -914,13 +914,13 @@
                 ]
             }
         },
-        "/logout": {
+        "/api/v1/logout": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Déconnexion de l'utilisateur",
-                "operationId": "bc88dc8e558a8c9ddd008f6f9b16c689",
+                "operationId": "6e2e539f3fe42085b0123f27bf438f5a",
                 "responses": {
                     "200": {
                         "description": "Déconnexion réussie",
@@ -940,13 +940,13 @@
                 }
             }
         },
-        "/refresh": {
+        "/api/v1/refresh": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Rafraîchir le token JWT",
-                "operationId": "78857dac8addee4c27670345238e3ce9",
+                "operationId": "7f0bdb96151e800f7b6d6701a3e6abda",
                 "responses": {
                     "200": {
                         "description": "Token rafraîchi avec succès",
@@ -973,13 +973,13 @@
                 }
             }
         },
-        "/change-password": {
+        "/api/v1/change-password": {
             "put": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Changer le mot de passe de l'utilisateur",
-                "operationId": "9fbec9edea3f409bb281233a22585045",
+                "operationId": "ed452844a38a22013e7afd2c5ab8ef3f",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1261,11 +1261,6 @@
                                                                 "type": "string",
                                                                 "example": "john@example.com"
                                                             },
-                                                            "phone": {
-                                                                "type": "string",
-                                                                "example": "+1234567890",
-                                                                "nullable": true
-                                                            },
                                                             "message": {
                                                                 "type": "string",
                                                                 "example": "Contact message content"
@@ -1370,6 +1365,12 @@
                                         "format": "email",
                                         "example": "john@example.com"
                                     },
+                                    "subject": {
+                                        "description": "Contact subject",
+                                        "type": "string",
+                                        "example": "Hello, I would like to get more information about your services.",
+                                        "nullable": true
+                                    },
                                     "phone": {
                                         "description": "Contact phone number",
                                         "type": "string",
@@ -1420,10 +1421,9 @@
                                                     "type": "string",
                                                     "example": "john@example.com"
                                                 },
-                                                "phone": {
+                                                "subject": {
                                                     "type": "string",
-                                                    "example": "+1234567890",
-                                                    "nullable": true
+                                                    "example": "Hello, I would like to get more information about your services."
                                                 },
                                                 "message": {
                                                     "type": "string",
@@ -1592,23 +1592,49 @@
                         }
                     },
                     {
-                        "name": "status",
+                        "name": "type",
                         "in": "query",
-                        "description": "Filtrer par statut du don",
+                        "description": "Filtrer par type (individual ou company)",
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "activated",
                             "enum": [
-                                "activated",
-                                "desactivated"
+                                "individual",
+                                "company"
                             ]
+                        }
+                    },
+                    {
+                        "name": "donationType",
+                        "in": "query",
+                        "description": "Filtrer par type de don",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Filtrer par statut actif",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "has_motivation",
+                        "in": "query",
+                        "description": "Filtrer par présence de motivation",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
                         }
                     },
                     {
                         "name": "q",
                         "in": "query",
-                        "description": "Terme de recherche pour nom, téléphone et email",
+                        "description": "Terme de recherche pour nom, email, téléphone, motivation, etc.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1628,7 +1654,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Enfilers retrieved successfully"
+                                            "example": "Dons récupérés avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -1644,9 +1670,22 @@
                                                                 "type": "string",
                                                                 "example": "ENF-12345678-1234-1234-1234-123456789abc"
                                                             },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "example": "individual"
+                                                            },
                                                             "name": {
                                                                 "type": "string",
                                                                 "example": "Jean Dupont"
+                                                            },
+                                                            "bossName": {
+                                                                "type": "string",
+                                                                "example": "Pierre Dupont",
+                                                                "nullable": true
+                                                            },
+                                                            "donationType": {
+                                                                "type": "string",
+                                                                "example": "Financier"
                                                             },
                                                             "email": {
                                                                 "type": "string",
@@ -1656,22 +1695,10 @@
                                                                 "type": "string",
                                                                 "example": "+33123456789"
                                                             },
-                                                            "type_enfiler": {
-                                                                "properties": {
-                                                                    "id": {
-                                                                        "type": "string",
-                                                                        "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                                    },
-                                                                    "name": {
-                                                                        "type": "string",
-                                                                        "example": "Don financier"
-                                                                    },
-                                                                    "description": {
-                                                                        "type": "string",
-                                                                        "example": "Don en argent"
-                                                                    }
-                                                                },
-                                                                "type": "object"
+                                                            "motivation": {
+                                                                "type": "string",
+                                                                "example": "Pour soutenir votre cause",
+                                                                "nullable": true
                                                             },
                                                             "is_active": {
                                                                 "type": "boolean",
@@ -2073,7 +2100,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Enfiler deleted successfully"
+                                            "example": "Don désactivé avec succès"
                                         },
                                         "data": {
                                             "type": "array",
@@ -2097,7 +2124,183 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Don not found"
+                                            "example": "Don non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dons/{enfiler}/activate": {
+            "patch": {
+                "tags": [
+                    "Dons"
+                ],
+                "summary": "Activer un don",
+                "description": "Activer un don en définissant is_active à true",
+                "operationId": "activateDon",
+                "parameters": [
+                    {
+                        "name": "enfiler",
+                        "in": "path",
+                        "description": "ID du don",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Don activé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Don activé avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Don non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Don non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dons/{enfiler}/toggle-active": {
+            "patch": {
+                "tags": [
+                    "Dons"
+                ],
+                "summary": "Basculer le statut actif",
+                "description": "Basculer le statut actif d'un don",
+                "operationId": "toggleActiveDon",
+                "parameters": [
+                    {
+                        "name": "enfiler",
+                        "in": "path",
+                        "description": "ID du don",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statut basculé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statut basculé avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Don non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Don non trouvé"
                                         }
                                     },
                                     "type": "object"
@@ -2161,10 +2364,41 @@
                     {
                         "name": "q",
                         "in": "query",
-                        "description": "Terme de recherche pour nom, prénom, statut marital, profil professionnel, résidence, téléphone et email",
+                        "description": "Terme de recherche pour nom, email, téléphone, nationalité, etc.",
                         "required": false,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrer par type (individual ou company)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "individual",
+                                "company"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "is_volunteer",
+                        "in": "query",
+                        "description": "Filtrer par statut bénévole",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Filtrer par statut actif",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
                         }
                     }
                 ],
@@ -2181,7 +2415,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Enfilers retrieved successfully"
+                                            "example": "Membres récupérés avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -2197,13 +2431,18 @@
                                                                 "type": "string",
                                                                 "example": "MEM-12345678-1234-1234-1234-123456789abc"
                                                             },
-                                                            "first_name": {
+                                                            "type": {
                                                                 "type": "string",
-                                                                "example": "Jean"
+                                                                "example": "individual"
                                                             },
-                                                            "last_name": {
+                                                            "name": {
                                                                 "type": "string",
-                                                                "example": "Dupont"
+                                                                "example": "Jean Dupont"
+                                                            },
+                                                            "bossName": {
+                                                                "type": "string",
+                                                                "example": "Pierre Dupont",
+                                                                "nullable": true
                                                             },
                                                             "email": {
                                                                 "type": "string",
@@ -2213,53 +2452,63 @@
                                                                 "type": "string",
                                                                 "example": "+33123456789"
                                                             },
-                                                            "date_of_birth": {
+                                                            "gender": {
                                                                 "type": "string",
-                                                                "format": "date",
-                                                                "example": "1990-01-01"
+                                                                "example": "Masculin",
+                                                                "nullable": true
                                                             },
-                                                            "marital_status": {
+                                                            "nationality": {
                                                                 "type": "string",
-                                                                "example": "Marié"
+                                                                "example": "Française",
+                                                                "nullable": true
                                                             },
-                                                            "professional_profile": {
+                                                            "matrimonial": {
                                                                 "type": "string",
-                                                                "example": "Ingénieur"
+                                                                "example": "Marié",
+                                                                "nullable": true
                                                             },
-                                                            "residence": {
-                                                                "type": "string",
-                                                                "example": "Paris, France"
-                                                            },
-                                                            "is_benevolent": {
+                                                            "is_volunteer": {
                                                                 "type": "boolean",
                                                                 "example": true
-                                                            },
-                                                            "benevolent_experience": {
-                                                                "type": "string",
-                                                                "example": "5 ans d'expérience",
-                                                                "nullable": true
-                                                            },
-                                                            "benevolent_type": {
-                                                                "properties": {
-                                                                    "id": {
-                                                                        "type": "string",
-                                                                        "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                                    },
-                                                                    "name": {
-                                                                        "type": "string",
-                                                                        "example": "Bénévole régulier"
-                                                                    },
-                                                                    "description": {
-                                                                        "type": "string",
-                                                                        "example": "Bénévole qui s'engage régulièrement"
-                                                                    }
-                                                                },
-                                                                "type": "object",
-                                                                "nullable": true
                                                             },
                                                             "is_active": {
                                                                 "type": "boolean",
                                                                 "example": true
+                                                            },
+                                                            "habit": {
+                                                                "type": "string",
+                                                                "example": "Paris",
+                                                                "nullable": true
+                                                            },
+                                                            "bio": {
+                                                                "type": "string",
+                                                                "example": "Biographie du membre",
+                                                                "nullable": true
+                                                            },
+                                                            "job": {
+                                                                "type": "string",
+                                                                "example": "Ingénieur",
+                                                                "nullable": true
+                                                            },
+                                                            "volunteer": {
+                                                                "type": "string",
+                                                                "example": "Bénévole actif",
+                                                                "nullable": true
+                                                            },
+                                                            "origin": {
+                                                                "type": "string",
+                                                                "example": "France",
+                                                                "nullable": true
+                                                            },
+                                                            "web": {
+                                                                "type": "string",
+                                                                "example": "https://example.com",
+                                                                "nullable": true
+                                                            },
+                                                            "activity": {
+                                                                "type": "string",
+                                                                "example": "Activités du membre",
+                                                                "nullable": true
                                                             },
                                                             "created_at": {
                                                                 "type": "string",
@@ -2341,21 +2590,31 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "first_name",
-                                    "last_name",
+                                    "type",
+                                    "name",
                                     "email",
                                     "phone"
                                 ],
                                 "properties": {
-                                    "first_name": {
-                                        "description": "Prénom du membre",
+                                    "type": {
+                                        "description": "Type de membre (individual ou company)",
                                         "type": "string",
-                                        "example": "Jean"
+                                        "enum": [
+                                            "individual",
+                                            "company"
+                                        ],
+                                        "example": "individual"
                                     },
-                                    "last_name": {
-                                        "description": "Nom de famille du membre",
+                                    "name": {
+                                        "description": "Nom du membre",
                                         "type": "string",
-                                        "example": "Dupont"
+                                        "example": "Jean Dupont"
+                                    },
+                                    "bossName": {
+                                        "description": "Nom du responsable (pour les entreprises)",
+                                        "type": "string",
+                                        "example": "Pierre Dupont",
+                                        "nullable": true
                                     },
                                     "email": {
                                         "description": "Email du membre",
@@ -2368,42 +2627,69 @@
                                         "type": "string",
                                         "example": "+33123456789"
                                     },
-                                    "date_of_birth": {
-                                        "description": "Date de naissance",
+                                    "gender": {
+                                        "description": "Genre",
                                         "type": "string",
-                                        "format": "date",
-                                        "example": "1990-01-01"
+                                        "example": "Masculin",
+                                        "nullable": true
                                     },
-                                    "marital_status": {
-                                        "description": "Statut marital",
+                                    "nationality": {
+                                        "description": "Nationalité",
                                         "type": "string",
-                                        "example": "Marié"
+                                        "example": "Française",
+                                        "nullable": true
                                     },
-                                    "professional_profile": {
-                                        "description": "Profil professionnel",
+                                    "matrimonial": {
+                                        "description": "Statut matrimonial",
                                         "type": "string",
-                                        "example": "Ingénieur"
+                                        "example": "Marié",
+                                        "nullable": true
                                     },
-                                    "residence": {
-                                        "description": "Lieu de résidence",
-                                        "type": "string",
-                                        "example": "Paris, France"
-                                    },
-                                    "is_benevolent": {
+                                    "is_volunteer": {
                                         "description": "Est-ce un bénévole ?",
                                         "type": "boolean",
                                         "example": true
                                     },
-                                    "benevolent_experience": {
-                                        "description": "Expérience bénévole",
+                                    "habit": {
+                                        "description": "Lieu de résidence",
                                         "type": "string",
-                                        "example": "5 ans d'expérience",
+                                        "example": "Paris",
                                         "nullable": true
                                     },
-                                    "benevolent_type_id": {
-                                        "description": "ID du type de bénévole",
+                                    "bio": {
+                                        "description": "Biographie",
                                         "type": "string",
-                                        "example": "01jywbsemp4vdwx02h17z5mgah",
+                                        "example": "Biographie du membre",
+                                        "nullable": true
+                                    },
+                                    "job": {
+                                        "description": "Profession",
+                                        "type": "string",
+                                        "example": "Ingénieur",
+                                        "nullable": true
+                                    },
+                                    "volunteer": {
+                                        "description": "Description du bénévolat",
+                                        "type": "string",
+                                        "example": "Bénévole actif",
+                                        "nullable": true
+                                    },
+                                    "origin": {
+                                        "description": "Origine",
+                                        "type": "string",
+                                        "example": "France",
+                                        "nullable": true
+                                    },
+                                    "web": {
+                                        "description": "Site web",
+                                        "type": "string",
+                                        "example": "https://example.com",
+                                        "nullable": true
+                                    },
+                                    "activity": {
+                                        "description": "Activités",
+                                        "type": "string",
+                                        "example": "Activités du membre",
                                         "nullable": true
                                     }
                                 },
@@ -2425,7 +2711,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member created successfully"
+                                            "example": "Membre créé avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -2437,13 +2723,18 @@
                                                     "type": "string",
                                                     "example": "MEM-12345678-1234-1234-1234-123456789abc"
                                                 },
-                                                "first_name": {
+                                                "type": {
                                                     "type": "string",
-                                                    "example": "Jean"
+                                                    "example": "individual"
                                                 },
-                                                "last_name": {
+                                                "name": {
                                                     "type": "string",
-                                                    "example": "Dupont"
+                                                    "example": "Jean Dupont"
+                                                },
+                                                "bossName": {
+                                                    "type": "string",
+                                                    "example": "Pierre Dupont",
+                                                    "nullable": true
                                                 },
                                                 "email": {
                                                     "type": "string",
@@ -2453,53 +2744,63 @@
                                                     "type": "string",
                                                     "example": "+33123456789"
                                                 },
-                                                "date_of_birth": {
+                                                "gender": {
                                                     "type": "string",
-                                                    "format": "date",
-                                                    "example": "1990-01-01"
+                                                    "example": "Masculin",
+                                                    "nullable": true
                                                 },
-                                                "marital_status": {
+                                                "nationality": {
                                                     "type": "string",
-                                                    "example": "Marié"
+                                                    "example": "Française",
+                                                    "nullable": true
                                                 },
-                                                "professional_profile": {
+                                                "matrimonial": {
                                                     "type": "string",
-                                                    "example": "Ingénieur"
+                                                    "example": "Marié",
+                                                    "nullable": true
                                                 },
-                                                "residence": {
-                                                    "type": "string",
-                                                    "example": "Paris, France"
-                                                },
-                                                "is_benevolent": {
+                                                "is_volunteer": {
                                                     "type": "boolean",
                                                     "example": true
-                                                },
-                                                "benevolent_experience": {
-                                                    "type": "string",
-                                                    "example": "5 ans d'expérience",
-                                                    "nullable": true
-                                                },
-                                                "benevolent_type": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Bénévole régulier"
-                                                        },
-                                                        "description": {
-                                                            "type": "string",
-                                                            "example": "Bénévole qui s'engage régulièrement"
-                                                        }
-                                                    },
-                                                    "type": "object",
-                                                    "nullable": true
                                                 },
                                                 "is_active": {
                                                     "type": "boolean",
                                                     "example": true
+                                                },
+                                                "habit": {
+                                                    "type": "string",
+                                                    "example": "Paris",
+                                                    "nullable": true
+                                                },
+                                                "bio": {
+                                                    "type": "string",
+                                                    "example": "Biographie du membre",
+                                                    "nullable": true
+                                                },
+                                                "job": {
+                                                    "type": "string",
+                                                    "example": "Ingénieur",
+                                                    "nullable": true
+                                                },
+                                                "volunteer": {
+                                                    "type": "string",
+                                                    "example": "Bénévole actif",
+                                                    "nullable": true
+                                                },
+                                                "origin": {
+                                                    "type": "string",
+                                                    "example": "France",
+                                                    "nullable": true
+                                                },
+                                                "web": {
+                                                    "type": "string",
+                                                    "example": "https://example.com",
+                                                    "nullable": true
+                                                },
+                                                "activity": {
+                                                    "type": "string",
+                                                    "example": "Activités du membre",
+                                                    "nullable": true
                                                 },
                                                 "created_at": {
                                                     "type": "string",
@@ -2574,7 +2875,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member retrieved successfully"
+                                            "example": "Membre récupéré avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -2588,13 +2889,18 @@
                                                             "type": "string",
                                                             "example": "MEM-12345678-1234-1234-1234-123456789abc"
                                                         },
-                                                        "first_name": {
+                                                        "type": {
                                                             "type": "string",
-                                                            "example": "Jean"
+                                                            "example": "individual"
                                                         },
-                                                        "last_name": {
+                                                        "name": {
                                                             "type": "string",
-                                                            "example": "Dupont"
+                                                            "example": "Jean Dupont"
+                                                        },
+                                                        "bossName": {
+                                                            "type": "string",
+                                                            "example": "Pierre Dupont",
+                                                            "nullable": true
                                                         },
                                                         "email": {
                                                             "type": "string",
@@ -2604,53 +2910,63 @@
                                                             "type": "string",
                                                             "example": "+33123456789"
                                                         },
-                                                        "date_of_birth": {
+                                                        "gender": {
                                                             "type": "string",
-                                                            "format": "date",
-                                                            "example": "1990-01-01"
+                                                            "example": "Masculin",
+                                                            "nullable": true
                                                         },
-                                                        "marital_status": {
+                                                        "nationality": {
                                                             "type": "string",
-                                                            "example": "Marié"
+                                                            "example": "Française",
+                                                            "nullable": true
                                                         },
-                                                        "professional_profile": {
+                                                        "matrimonial": {
                                                             "type": "string",
-                                                            "example": "Ingénieur"
+                                                            "example": "Marié",
+                                                            "nullable": true
                                                         },
-                                                        "residence": {
-                                                            "type": "string",
-                                                            "example": "Paris, France"
-                                                        },
-                                                        "is_benevolent": {
+                                                        "is_volunteer": {
                                                             "type": "boolean",
                                                             "example": true
-                                                        },
-                                                        "benevolent_experience": {
-                                                            "type": "string",
-                                                            "example": "5 ans d'expérience",
-                                                            "nullable": true
-                                                        },
-                                                        "benevolent_type": {
-                                                            "properties": {
-                                                                "id": {
-                                                                    "type": "string",
-                                                                    "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                                },
-                                                                "name": {
-                                                                    "type": "string",
-                                                                    "example": "Bénévole régulier"
-                                                                },
-                                                                "description": {
-                                                                    "type": "string",
-                                                                    "example": "Bénévole qui s'engage régulièrement"
-                                                                }
-                                                            },
-                                                            "type": "object",
-                                                            "nullable": true
                                                         },
                                                         "is_active": {
                                                             "type": "boolean",
                                                             "example": true
+                                                        },
+                                                        "habit": {
+                                                            "type": "string",
+                                                            "example": "Paris",
+                                                            "nullable": true
+                                                        },
+                                                        "bio": {
+                                                            "type": "string",
+                                                            "example": "Biographie du membre",
+                                                            "nullable": true
+                                                        },
+                                                        "job": {
+                                                            "type": "string",
+                                                            "example": "Ingénieur",
+                                                            "nullable": true
+                                                        },
+                                                        "volunteer": {
+                                                            "type": "string",
+                                                            "example": "Bénévole actif",
+                                                            "nullable": true
+                                                        },
+                                                        "origin": {
+                                                            "type": "string",
+                                                            "example": "France",
+                                                            "nullable": true
+                                                        },
+                                                        "web": {
+                                                            "type": "string",
+                                                            "example": "https://example.com",
+                                                            "nullable": true
+                                                        },
+                                                        "activity": {
+                                                            "type": "string",
+                                                            "example": "Activités du membre",
+                                                            "nullable": true
                                                         },
                                                         "created_at": {
                                                             "type": "string",
@@ -2686,7 +3002,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member not found"
+                                            "example": "Membre non trouvé"
                                         }
                                     },
                                     "type": "object"
@@ -2742,15 +3058,25 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "first_name": {
-                                        "description": "Prénom du membre",
+                                    "type": {
+                                        "description": "Type de membre (individual ou company)",
                                         "type": "string",
-                                        "example": "Jean"
+                                        "enum": [
+                                            "individual",
+                                            "company"
+                                        ],
+                                        "example": "individual"
                                     },
-                                    "last_name": {
-                                        "description": "Nom de famille du membre",
+                                    "name": {
+                                        "description": "Nom du membre",
                                         "type": "string",
-                                        "example": "Dupont"
+                                        "example": "Jean Dupont"
+                                    },
+                                    "bossName": {
+                                        "description": "Nom du responsable (pour les entreprises)",
+                                        "type": "string",
+                                        "example": "Pierre Dupont",
+                                        "nullable": true
                                     },
                                     "email": {
                                         "description": "Email du membre",
@@ -2763,42 +3089,69 @@
                                         "type": "string",
                                         "example": "+33123456789"
                                     },
-                                    "date_of_birth": {
-                                        "description": "Date de naissance",
+                                    "gender": {
+                                        "description": "Genre",
                                         "type": "string",
-                                        "format": "date",
-                                        "example": "1990-01-01"
+                                        "example": "Masculin",
+                                        "nullable": true
                                     },
-                                    "marital_status": {
-                                        "description": "Statut marital",
+                                    "nationality": {
+                                        "description": "Nationalité",
                                         "type": "string",
-                                        "example": "Marié"
+                                        "example": "Française",
+                                        "nullable": true
                                     },
-                                    "professional_profile": {
-                                        "description": "Profil professionnel",
+                                    "matrimonial": {
+                                        "description": "Statut matrimonial",
                                         "type": "string",
-                                        "example": "Ingénieur"
+                                        "example": "Marié",
+                                        "nullable": true
                                     },
-                                    "residence": {
-                                        "description": "Lieu de résidence",
-                                        "type": "string",
-                                        "example": "Paris, France"
-                                    },
-                                    "is_benevolent": {
+                                    "is_volunteer": {
                                         "description": "Est-ce un bénévole ?",
                                         "type": "boolean",
                                         "example": true
                                     },
-                                    "benevolent_experience": {
-                                        "description": "Expérience bénévole",
+                                    "habit": {
+                                        "description": "Lieu de résidence",
                                         "type": "string",
-                                        "example": "5 ans d'expérience",
+                                        "example": "Paris",
                                         "nullable": true
                                     },
-                                    "benevolent_type_id": {
-                                        "description": "ID du type de bénévole",
+                                    "bio": {
+                                        "description": "Biographie",
                                         "type": "string",
-                                        "example": "01jywbsemp4vdwx02h17z5mgah",
+                                        "example": "Biographie du membre",
+                                        "nullable": true
+                                    },
+                                    "job": {
+                                        "description": "Profession",
+                                        "type": "string",
+                                        "example": "Ingénieur",
+                                        "nullable": true
+                                    },
+                                    "volunteer": {
+                                        "description": "Description du bénévolat",
+                                        "type": "string",
+                                        "example": "Bénévole actif",
+                                        "nullable": true
+                                    },
+                                    "origin": {
+                                        "description": "Origine",
+                                        "type": "string",
+                                        "example": "France",
+                                        "nullable": true
+                                    },
+                                    "web": {
+                                        "description": "Site web",
+                                        "type": "string",
+                                        "example": "https://example.com",
+                                        "nullable": true
+                                    },
+                                    "activity": {
+                                        "description": "Activités",
+                                        "type": "string",
+                                        "example": "Activités du membre",
                                         "nullable": true
                                     }
                                 },
@@ -2820,7 +3173,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member updated successfully"
+                                            "example": "Membre modifié avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -2832,13 +3185,18 @@
                                                     "type": "string",
                                                     "example": "MEM-12345678-1234-1234-1234-123456789abc"
                                                 },
-                                                "first_name": {
+                                                "type": {
                                                     "type": "string",
-                                                    "example": "Jean"
+                                                    "example": "individual"
                                                 },
-                                                "last_name": {
+                                                "name": {
                                                     "type": "string",
-                                                    "example": "Dupont"
+                                                    "example": "Jean Dupont"
+                                                },
+                                                "bossName": {
+                                                    "type": "string",
+                                                    "example": "Pierre Dupont",
+                                                    "nullable": true
                                                 },
                                                 "email": {
                                                     "type": "string",
@@ -2848,53 +3206,63 @@
                                                     "type": "string",
                                                     "example": "+33123456789"
                                                 },
-                                                "date_of_birth": {
+                                                "gender": {
                                                     "type": "string",
-                                                    "format": "date",
-                                                    "example": "1990-01-01"
+                                                    "example": "Masculin",
+                                                    "nullable": true
                                                 },
-                                                "marital_status": {
+                                                "nationality": {
                                                     "type": "string",
-                                                    "example": "Marié"
+                                                    "example": "Française",
+                                                    "nullable": true
                                                 },
-                                                "professional_profile": {
+                                                "matrimonial": {
                                                     "type": "string",
-                                                    "example": "Ingénieur"
+                                                    "example": "Marié",
+                                                    "nullable": true
                                                 },
-                                                "residence": {
-                                                    "type": "string",
-                                                    "example": "Paris, France"
-                                                },
-                                                "is_benevolent": {
+                                                "is_volunteer": {
                                                     "type": "boolean",
                                                     "example": true
-                                                },
-                                                "benevolent_experience": {
-                                                    "type": "string",
-                                                    "example": "5 ans d'expérience",
-                                                    "nullable": true
-                                                },
-                                                "benevolent_type": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Bénévole régulier"
-                                                        },
-                                                        "description": {
-                                                            "type": "string",
-                                                            "example": "Bénévole qui s'engage régulièrement"
-                                                        }
-                                                    },
-                                                    "type": "object",
-                                                    "nullable": true
                                                 },
                                                 "is_active": {
                                                     "type": "boolean",
                                                     "example": true
+                                                },
+                                                "habit": {
+                                                    "type": "string",
+                                                    "example": "Paris",
+                                                    "nullable": true
+                                                },
+                                                "bio": {
+                                                    "type": "string",
+                                                    "example": "Biographie du membre",
+                                                    "nullable": true
+                                                },
+                                                "job": {
+                                                    "type": "string",
+                                                    "example": "Ingénieur",
+                                                    "nullable": true
+                                                },
+                                                "volunteer": {
+                                                    "type": "string",
+                                                    "example": "Bénévole actif",
+                                                    "nullable": true
+                                                },
+                                                "origin": {
+                                                    "type": "string",
+                                                    "example": "France",
+                                                    "nullable": true
+                                                },
+                                                "web": {
+                                                    "type": "string",
+                                                    "example": "https://example.com",
+                                                    "nullable": true
+                                                },
+                                                "activity": {
+                                                    "type": "string",
+                                                    "example": "Activités du membre",
+                                                    "nullable": true
                                                 },
                                                 "created_at": {
                                                     "type": "string",
@@ -2927,7 +3295,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member not found"
+                                            "example": "Membre non trouvé"
                                         }
                                     },
                                     "type": "object"
@@ -3008,7 +3376,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member deleted successfully"
+                                            "example": "Membre désactivé avec succès"
                                         },
                                         "data": {
                                             "type": "array",
@@ -3032,7 +3400,522 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Member not found"
+                                            "example": "Membre non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/membres/{member}/activate": {
+            "patch": {
+                "tags": [
+                    "Membres"
+                ],
+                "summary": "Activer un membre",
+                "description": "Activer un membre en définissant is_active à true",
+                "operationId": "activateMembre",
+                "parameters": [
+                    {
+                        "name": "member",
+                        "in": "path",
+                        "description": "ID du membre",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Membre activé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre activé avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Membre non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/membres/{member}/toggle-volunteer": {
+            "patch": {
+                "tags": [
+                    "Membres"
+                ],
+                "summary": "Basculer le statut bénévole",
+                "description": "Basculer le statut bénévole d'un membre",
+                "operationId": "toggleVolunteerMembre",
+                "parameters": [
+                    {
+                        "name": "member",
+                        "in": "path",
+                        "description": "ID du membre",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statut bénévole basculé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statut bénévole basculé avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Membre non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/membres/{member}/approve": {
+            "patch": {
+                "tags": [
+                    "Membres"
+                ],
+                "summary": "Approuver un membre",
+                "description": "Approuver un membre et envoyer un email de confirmation",
+                "operationId": "approveMembre",
+                "parameters": [
+                    {
+                        "name": "member",
+                        "in": "path",
+                        "description": "ID du membre",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "message": {
+                                        "description": "Message personnalisé à inclure dans l'email",
+                                        "type": "string",
+                                        "example": "Votre demande a été approuvée avec succès",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Membre approuvé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre approuvé avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "member": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Jean Dupont"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "jean.dupont@example.com"
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "approved_at": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-06-28T22:35:27.000000Z"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Membre non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Membre déjà approuvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ce membre est déjà approuvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/membres/{member}/reject": {
+            "patch": {
+                "tags": [
+                    "Membres"
+                ],
+                "summary": "Rejeter un membre",
+                "description": "Rejeter un membre et envoyer un email de notification",
+                "operationId": "rejectMembre",
+                "parameters": [
+                    {
+                        "name": "member",
+                        "in": "path",
+                        "description": "ID du membre",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reason"
+                                ],
+                                "properties": {
+                                    "reason": {
+                                        "description": "Raison du rejet",
+                                        "type": "string",
+                                        "example": "Informations incomplètes"
+                                    },
+                                    "message": {
+                                        "description": "Message personnalisé à inclure dans l'email",
+                                        "type": "string",
+                                        "example": "Nous ne pouvons pas accepter votre demande pour le moment",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Membre rejeté avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre rejeté avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "member": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Jean Dupont"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "jean.dupont@example.com"
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean",
+                                                            "example": false
+                                                        },
+                                                        "rejected_at": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-06-28T22:35:27.000000Z"
+                                                        },
+                                                        "rejection_reason": {
+                                                            "type": "string",
+                                                            "example": "Informations incomplètes"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Membre non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Membre non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Membre déjà rejeté",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ce membre est déjà rejeté"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "La raison du rejet est requise"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

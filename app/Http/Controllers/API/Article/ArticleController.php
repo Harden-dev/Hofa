@@ -67,6 +67,7 @@ class ArticleController extends BaseController
         $data = $request->validate([
             'title' => 'required|string',
             'content' => 'required|string',
+            'description' => 'nullable|string',
             'cover_image' => 'nullable|image|max:2048',
             'gallery.*' => 'nullable|image|max:2048',
             'captions' => 'nullable|array',
@@ -106,11 +107,14 @@ class ArticleController extends BaseController
                 ? $data['content']
                 : TranslationService::translate($data['content'], $sourceLang, $locale);
 
+            $description = $locale === $sourceLang ? $data['description'] : TranslationService::translate($data['description'], $sourceLang, $locale);
+
             ArticleTranslation::create([
                 'article_id' => $article->id,
                 'locale' => $locale,
                 'title' => $title,
                 'content' => $content,
+                'description' => $description,
             ]);
         }
 
@@ -251,6 +255,7 @@ class ArticleController extends BaseController
                         'cover_image' => $article->cover_image ? asset('storage/' . $article->cover_image) : null,
                         'title' => $t?->title ?? '[non traduit]',
                         'content' => $t?->content ?? '[non traduit]',
+                        'description' => $t?->description ?? '[non traduit]',
                         'gallery' => $article->images->map(fn($img) => [
                             'url' => asset('storage/' . $img->path),
                             'caption' => $img->caption,
@@ -430,6 +435,7 @@ class ArticleController extends BaseController
             'title' => 'sometimes|required|string',
             'content' => 'sometimes|required|string',
             'cover_image' => 'nullable|image|max:2048',
+            'description' => 'nullable|string',
             'gallery.*' => 'nullable|image|max:2048',
             'captions' => 'nullable|array',
             'captions.*' => 'nullable|string',
@@ -497,6 +503,13 @@ class ArticleController extends BaseController
                         ? $data['content']
                         : TranslationService::translate($data['content'], $sourceLang, $locale);
                     $translation->content = $content;
+                }
+
+                if(isset($data['description'])) {
+                    $description = $locale === $sourceLang
+                        ? $data['description']
+                        : TranslationService::translate($data['description'], $sourceLang, $locale);
+                    $translation->description = $description;
                 }
 
                 $translation->save();

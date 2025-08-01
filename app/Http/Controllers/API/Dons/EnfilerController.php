@@ -45,16 +45,37 @@ class EnfilerController extends BaseController
      *         @OA\Schema(type="integer", default=10)
      *     ),
      *     @OA\Parameter(
-     *         name="status",
+     *         name="type",
      *         in="query",
-     *         description="Filtrer par statut du don",
+     *         description="Filtrer par type (individual ou company)",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"activated", "desactivated"}, default="activated")
+     *         @OA\Schema(type="string", enum={"individual", "company"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="donationType",
+     *         in="query",
+     *         description="Filtrer par type de don",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="is_active",
+     *         in="query",
+     *         description="Filtrer par statut actif",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Parameter(
+     *         name="has_motivation",
+     *         in="query",
+     *         description="Filtrer par présence de motivation",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
      *     ),
      *     @OA\Parameter(
      *         name="q",
      *         in="query",
-     *         description="Terme de recherche pour nom, téléphone et email",
+     *         description="Terme de recherche pour nom, email, téléphone, motivation, etc.",
      *         required=false,
      *         @OA\Schema(type="string")
      *     ),
@@ -63,20 +84,18 @@ class EnfilerController extends BaseController
      *         description="Dons récupérés avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Enfilers retrieved successfully"),
+     *             @OA\Property(property="message", type="string", example="Dons récupérés avec succès"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="items", type="array", @OA\Items(
      *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
      *                     @OA\Property(property="slug", type="string", example="ENF-12345678-1234-1234-1234-123456789abc"),
+     *                     @OA\Property(property="type", type="string", example="individual"),
      *                     @OA\Property(property="name", type="string", example="Jean Dupont"),
+     *                     @OA\Property(property="bossName", type="string", nullable=true, example="Pierre Dupont"),
+     *                     @OA\Property(property="donationType", type="string", example="Financier"),
      *                     @OA\Property(property="email", type="string", example="jean@example.com"),
      *                     @OA\Property(property="phone", type="string", example="+33123456789"),
-     *                    
-     *                     @OA\Property(property="type_enfiler", type="object",
-     *                         @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
-     *                         @OA\Property(property="name", type="string", example="Don financier"),
-     *                         @OA\Property(property="description", type="string", example="Don en argent")
-     *                     ),
+     *                     @OA\Property(property="motivation", type="string", nullable=true, example="Pour soutenir votre cause"),
      *                     @OA\Property(property="is_active", type="boolean", example=true),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
      *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
@@ -102,24 +121,49 @@ class EnfilerController extends BaseController
     public function index(Request $request)
     {
         // Recherche
-        $query = Enfiler::query()->with('type_enfiler');
-          // Filtrage par status
-          $status = $request->get('status');
+        $query = Enfiler::query();
 
-          if ($status === 'activated') {
-              $query->where('is_active', 1);
-          } elseif ($status === 'desactivated') {
-              $query->where('is_active', 0);
-          } else {
-              $query->where('is_active', 1); // Par défaut, on ne retourne que les activés
-          }
-  
+        // Filtrage par type
+        if ($request->has('type') && $request->type) {
+            $query->byType($request->type);
+        }
+
+        // Filtrage par type de don
+        if ($request->has('donationType') && $request->donationType) {
+            $query->byDonationType($request->donationType);
+        }
+
+        // Filtrage par statut actif
+        if ($request->has('is_active') && $request->is_active !== null) {
+            if ($request->is_active) {
+                $query->active();
+            } else {
+                $query->inactive();
+            }
+        } else {
+            // Par défaut, on ne retourne que les actifs
+            $query->active();
+        }
+
+        // Filtrage par présence de motivation
+        if ($request->has('has_motivation') && $request->has_motivation !== null) {
+            if ($request->has_motivation) {
+                $query->withMotivation();
+            } else {
+                $query->withoutMotivation();
+            }
+        }
+
+        // Recherche textuelle
         if ($request->has('q') && $request->q) {
             $q = $request->q;
             $query->where(function ($subQuery) use ($q) {
                 $subQuery->where('name', 'like', "%$q%")
+                    ->orWhere('bossName', 'like', "%$q%")
+                    ->orWhere('email', 'like', "%$q%")
                     ->orWhere('phone', 'like', "%$q%")
-                    ->orWhere('email', 'like', "%$q%");
+                    ->orWhere('donationType', 'like', "%$q%")
+                    ->orWhere('motivation', 'like', "%$q%");
             });
         }
 
@@ -131,17 +175,14 @@ class EnfilerController extends BaseController
         return $this->sendResponse(
             [
                 'items' => EnfilerResource::collection($enfilers),
-
                 'pagination' => [
                     'total' => $enfilers->total(),
                     'per_page' => $enfilers->perPage(),
                     'current_page' => $enfilers->currentPage(),
                     'last_page' => $enfilers->lastPage(),
-                ],
-
+                ]
             ],
-            'Enfilers retrieved successfully'
-
+            'Dons récupérés avec succès'
         );
     }
 
@@ -159,7 +200,7 @@ class EnfilerController extends BaseController
      *             @OA\Property(property="name", type="string", example="Jean Dupont", description="Nom du donateur"),
      *             @OA\Property(property="email", type="string", format="email", example="jean@example.com", description="Email du donateur"),
      *             @OA\Property(property="phone", type="string", nullable=true, example="+33123456789", description="Téléphone du donateur"),
-     *            
+     *
      *             @OA\Property(property="enfiler_type_id", type="string", example="01jywbsemp4vdwx02h17z5mgah", description="ID du type de don"),
      *             @OA\Property(property="message", type="string", nullable=true, example="Merci pour votre travail", description="Message accompagnant le don")
      *         )
@@ -176,7 +217,7 @@ class EnfilerController extends BaseController
      *                 @OA\Property(property="name", type="string", example="Jean Dupont"),
      *                 @OA\Property(property="email", type="string", example="jean@example.com"),
      *                 @OA\Property(property="phone", type="string", nullable=true, example="+33123456789"),
-     *                
+     *
      *                 @OA\Property(property="type_enfiler", type="object",
      *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
      *                     @OA\Property(property="name", type="string", example="Don financier"),
@@ -206,17 +247,25 @@ class EnfilerController extends BaseController
             $enfiler = Enfiler::create($data);
 
             // Mail de remerciement au donateur
-            Mail::to($enfiler->email)->send(new EnfilerMail($enfiler));
-            Log::info('Email sent to '. $enfiler->email);
+            try {
+                Mail::to($enfiler->email)->send(new EnfilerMail($enfiler));
+                Log::info('Email sent to '. $enfiler->email);
+            } catch (Exception $emailException) {
+                Log::warning("Email notification failed for enfiler {$enfiler->email}: " . $emailException->getMessage());
+            }
+
             // mail de notification a l'admin
+            try {
+                Mail::to(env('MAIL_FROM_ADDRESS'))->send(new EnfilerMail($enfiler, true));
+                Log::info('email sent to the owner');
+            } catch (Exception $adminEmailException) {
+                Log::warning("Admin email notification failed: " . $adminEmailException->getMessage());
+            }
 
-            Mail::to(env('MAIL_FROM_ADDRESS'))->send(new EnfilerMail($enfiler, true));
-            Log::info('email sent to the owner');
-
-            return $this->sendResponse(new EnfilerResource($enfiler), 'Don created successfully');
+            return $this->sendResponse(new EnfilerResource($enfiler), 'Don créé avec succès');
         } catch (Exception $th) {
-            Log::info("Error creating don: " . $th->getMessage());
-            return $this->sendError('Error creating don');
+            Log::error("Error creating don: " . $th->getMessage());
+            return $this->sendError('Erreur lors de la création du don');
         }
     }
 
@@ -248,7 +297,7 @@ class EnfilerController extends BaseController
      *                     @OA\Property(property="name", type="string", example="Jean Dupont"),
      *                     @OA\Property(property="email", type="string", example="jean@example.com"),
      *                     @OA\Property(property="phone", type="string", nullable=true, example="+33123456789"),
-     *                    
+     *
      *                     @OA\Property(property="type_enfiler", type="object",
      *                         @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
      *                         @OA\Property(property="name", type="string", example="Don financier"),
@@ -303,7 +352,7 @@ class EnfilerController extends BaseController
      *         description="Don désactivé avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Enfiler deleted successfully"),
+     *             @OA\Property(property="message", type="string", example="Don désactivé avec succès"),
      *             @OA\Property(property="data", type="array", @OA\Items())
      *         )
      *     ),
@@ -312,7 +361,7 @@ class EnfilerController extends BaseController
      *         description="Don non trouvé",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Don not found")
+     *             @OA\Property(property="message", type="string", example="Don non trouvé")
      *         )
      *     ),
      *     @OA\Response(
@@ -327,12 +376,116 @@ class EnfilerController extends BaseController
     public function desactivate(Enfiler $enfiler)
     {
         try {
-            $enfiler->is_active = false;
-            $enfiler->save();
+            $enfiler->deactivate();
 
-            return $this->sendResponse([], 'Enfiler deleted successfully');
+            return $this->sendResponse([], 'Don désactivé avec succès');
         } catch (Exception $th) {
-            return $this->sendError('Error deleting enfiler');
+            Log::error("Error deactivating enfiler: " . $th->getMessage());
+            return $this->sendError('Erreur lors de la désactivation du don');
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/v1/dons/{enfiler}/activate",
+     *     operationId="activateDon",
+     *     tags={"Dons"},
+     *     summary="Activer un don",
+     *     description="Activer un don en définissant is_active à true",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="enfiler",
+     *         in="path",
+     *         description="ID du don",
+     *         required=true,
+     *         @OA\Schema(type="string", example="01jywbsemp4vdwx02h17z5mgah")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Don activé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Don activé avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Don non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Don non trouvé")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function activate(Enfiler $enfiler)
+    {
+        try {
+            $enfiler->activate();
+            return $this->sendResponse([], 'Don activé avec succès');
+        } catch (Exception $th) {
+            Log::error("Error activating enfiler: " . $th->getMessage());
+            return $this->sendError('Erreur lors de l\'activation du don');
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/v1/dons/{enfiler}/toggle-active",
+     *     operationId="toggleActiveDon",
+     *     tags={"Dons"},
+     *     summary="Basculer le statut actif",
+     *     description="Basculer le statut actif d'un don",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="enfiler",
+     *         in="path",
+     *         description="ID du don",
+     *         required=true,
+     *         @OA\Schema(type="string", example="01jywbsemp4vdwx02h17z5mgah")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Statut basculé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Statut basculé avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Don non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Don non trouvé")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function toggleActive(Enfiler $enfiler)
+    {
+        try {
+            $enfiler->toggleActive();
+            return $this->sendResponse([], 'Statut basculé avec succès');
+        } catch (Exception $th) {
+            Log::error("Error toggling enfiler status: " . $th->getMessage());
+            return $this->sendError('Erreur lors du basculement du statut');
         }
     }
 }
