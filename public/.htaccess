@@ -23,12 +23,3 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
-
-# CORS Headers - Let Laravel handle CORS dynamically
-<IfModule mod_headers.c>
-    # Remove any existing CORS headers to avoid conflicts
-    Header unset Access-Control-Allow-Origin
-    Header unset Access-Control-Allow-Methods
-    Header unset Access-Control-Allow-Headers
-    Header unset Access-Control-Allow-Credentials
-</IfModule>
