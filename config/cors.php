@@ -6,10 +6,10 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://backend.hofa-ci.org',
-        'https://www.backend.hofa-ci.org',
-        'http://backend.hofa-ci.org',
-        'http://www.backend.hofa-ci.org',
+        'https://backend.hofa-ci.org/public',
+        'https://www.backend.hofa-ci.org/public',
+        'http://backend.hofa-ci.org/public',
+        'http://www.backend.hofa-ci.org/public',
     ],
 
     'allowed_origins_patterns' => [
