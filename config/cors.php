@@ -33,6 +33,11 @@ return [
         'https://www.backend.hofa-ci.org',
         'http://backend.hofa-ci.org',
         'http://www.backend.hofa-ci.org',
+        // Ajout des origines pour le développement local
+        'http://localhost',
+        'https://localhost',
+        'http://127.0.0.1',
+        'https://127.0.0.1',
     ],
 
     'allowed_origins_patterns' => [],

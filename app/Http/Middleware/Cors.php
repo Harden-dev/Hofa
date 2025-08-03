@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class Cors
@@ -15,6 +16,11 @@ class Cors
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Log pour déboguer
+        Log::info('CORS Middleware - Origin: ' . $request->header('Origin'));
+        Log::info('CORS Middleware - Method: ' . $request->method());
+        Log::info('CORS Middleware - URL: ' . $request->url());
+
         $response = $next($request);
 
         // Charger la configuration CORS
@@ -23,10 +29,15 @@ class Cors
         // Origines autorisées depuis la configuration
         $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
 
-        // Vérifier si l'origine de la requête est autorisée
+                        // Vérifier si l'origine de la requête est autorisée
         $origin = $request->header('Origin');
+
         if (in_array($origin, $allowedOrigins)) {
             $response->headers->set('Access-Control-Allow-Origin', $origin);
+        } elseif ($origin) {
+            // Si l'origine n'est pas dans la liste mais qu'on a une origine, l'accepter temporairement pour le debug
+            $response->headers->set('Access-Control-Allow-Origin', $origin);
+            Log::warning('CORS: Origin not in allowed list but accepted: ' . $origin);
         }
 
         // En-têtes CORS depuis la configuration
@@ -46,6 +57,13 @@ class Cors
             $response->setStatusCode(200);
             $response->setContent('');
         }
+
+        // Log des headers envoyés
+        Log::info('CORS Headers set: ' . json_encode([
+            'Access-Control-Allow-Origin' => $response->headers->get('Access-Control-Allow-Origin'),
+            'Access-Control-Allow-Methods' => $response->headers->get('Access-Control-Allow-Methods'),
+            'Access-Control-Allow-Headers' => $response->headers->get('Access-Control-Allow-Headers'),
+        ]));
 
         return $response;
     }
