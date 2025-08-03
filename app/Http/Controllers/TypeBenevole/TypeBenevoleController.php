@@ -113,7 +113,7 @@ class TypeBenevoleController extends BaseController
             'Liste des types de benevoles'
         );
     }
-    
+
     /**
      * @OA\Post(
      *     path="/api/v1/type-benevoles",
@@ -172,7 +172,7 @@ class TypeBenevoleController extends BaseController
 
         try {
             $typeBenevole = BenevoleType::create($data);
-            return $this->sendResponse(new TypeBenevoleResource($typeBenevole), 'Type benevole created successfully');
+            return $this->sendResponse([], 'Type benevole created successfully');
         } catch (Exception $th) {
             Log::info("Error creating type benevole: " . $th->getMessage());
             return $this->sendError('Error creating type benevole');

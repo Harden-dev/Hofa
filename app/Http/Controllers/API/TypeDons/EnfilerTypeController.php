@@ -106,7 +106,7 @@ class EnfilerTypeController extends BaseController
         } else {
             $query->where('is_active', 1); // Par défaut, on ne retourne que les activés
         }
-        
+
         if ($request->has('q') && $request->q) {
             $q = $request->q;
             $query->where(function ($subQuery) use ($q) {
@@ -248,7 +248,7 @@ class EnfilerTypeController extends BaseController
         try {
             $enfilerType = EnfilerType::create($data);
             Log::info("enfiler Type created successfully");
-            return $this->sendResponse(new EnfilerTypeResource($enfilerType), 'enfiler Type created successfully');
+            return $this->sendResponse([], 'enfiler Type created successfully');
         } catch (Exception $th) {
             Log::info("Error creating enfiler Type: " . $th->getMessage());
             return $this->sendError('Error creating enfiler Type');

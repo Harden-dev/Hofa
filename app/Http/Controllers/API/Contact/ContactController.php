@@ -162,18 +162,7 @@ class ContactController extends BaseController
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Contact created successfully"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
-     *                 @OA\Property(property="slug", type="string", example="CONT-12345678-1234-1234-1234-123456789abc"),
-     *                 @OA\Property(property="name", type="string", example="John Doe"),
-     *                 @OA\Property(property="email", type="string", example="john@example.com"),
-     *                 @OA\Property(property="subject", type="string", example="Hello, I would like to get more information about your services."),
-     *
-     *                 @OA\Property(property="message", type="string", example="Hello, I would like to get more information about your services."),
-     *                 @OA\Property(property="is_active", type="boolean", example=true),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
-     *             )
+     *             @OA\Property(property="data", type="array", @OA\Items())
      *         )
      *     ),
      *     @OA\Response(
@@ -195,7 +184,7 @@ class ContactController extends BaseController
 
             Mail::to(env('MAIL_FROM_ADDRESS'))->cc('christyao1299@gmail.com')->send(new ContactNotification($contact));
             Log::info('email sent to ' . env('MAIL_FROM_ADDRESS'));
-            return $this->sendResponse(new ContactResource($contact), 'Contact created successfully');
+            return $this->sendResponse([], 'Contact created successfully');
         } catch (Exception $th) {
             Log::info("Error creating contact: " . $th->getMessage());
             return $this->sendError('Error creating contact', $th->getMessage());

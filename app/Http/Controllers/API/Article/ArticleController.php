@@ -132,7 +132,7 @@ class ArticleController extends BaseController
             }
         }
 
-        return response()->json(['message' => 'Article créé avec succès', 'data' => $article], 201);
+        return $this->sendResponse([], 'Article créé avec succès');
     }
 
     /**

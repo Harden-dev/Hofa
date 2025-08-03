@@ -62,7 +62,7 @@ class UserController extends BaseController
      *                     @OA\Property(property="slug", type="string", example="USER-12345678-1234-1234-1234-123456789abc"),
      *                     @OA\Property(property="name", type="string", example="John Doe"),
      *                     @OA\Property(property="email", type="string", example="john.doe@example.com"),
-     *                     
+     *
      *                     @OA\Property(property="is_active", type="boolean", example=true),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
      *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
@@ -147,7 +147,7 @@ class UserController extends BaseController
      *                     @OA\Property(property="slug", type="string", example="USER-12345678-1234-1234-1234-123456789abc"),
      *                     @OA\Property(property="name", type="string", example="John Doe"),
      *                     @OA\Property(property="email", type="string", example="john.doe@example.com"),
-     *                   
+     *
      *                     @OA\Property(property="is_active", type="boolean", example=true),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
      *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
@@ -192,7 +192,7 @@ class UserController extends BaseController
      *             @OA\Property(property="name", type="string", example="John Doe", description="Nom complet de l'utilisateur"),
      *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com", description="Adresse email de l'utilisateur"),
      *             @OA\Property(property="password", type="string", format="password", example="password123", description="Mot de passe de l'utilisateur"),
-     *          
+     *
      *         )
      *     ),
      *     @OA\Response(
@@ -236,8 +236,8 @@ class UserController extends BaseController
         $data['slug'] = 'USER-' . Str::uuid();
         try {
             $user = User::create($data);
-            
-            return $this->sendResponse(new UserResource($user), 'User created successfully');
+
+            return $this->sendResponse([], 'User created successfully');
         } catch (Exception $th) {
             Log::info("Error creating user: " . $th->getMessage());
             return $this->sendError('Error creating user');
@@ -279,7 +279,7 @@ class UserController extends BaseController
      *                     @OA\Property(property="slug", type="string", example="USER-12345678-1234-1234-1234-123456789abc"),
      *                     @OA\Property(property="name", type="string", example="John Doe"),
      *                     @OA\Property(property="email", type="string", example="john.doe@example.com"),
-     *                    
+     *
      *                     @OA\Property(property="is_active", type="boolean", example=true),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
      *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
@@ -315,7 +315,7 @@ class UserController extends BaseController
     public function update(UserFormRequest $request, User $user)
     {
         $data = collect($request->all())->except('password', 'is_active', 'slug')->toArray();
-    
+
         try {
             $user->update($data);
             Log::info('User updated successfully');

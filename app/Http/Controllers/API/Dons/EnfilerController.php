@@ -212,20 +212,7 @@ class EnfilerController extends BaseController
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Don créé avec succès"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
-     *                 @OA\Property(property="slug", type="string", example="ENF-12345678-1234-1234-1234-123456789abc"),
-     *                 @OA\Property(property="type", type="string", example="individual"),
-     *                 @OA\Property(property="name", type="string", example="Jean Dupont"),
-     *                 @OA\Property(property="bossName", type="string", nullable=true, example="Pierre Dupont"),
-     *                 @OA\Property(property="donationType", type="string", example="Financier"),
-     *                 @OA\Property(property="email", type="string", example="jean@example.com"),
-     *                 @OA\Property(property="phone", type="string", nullable=true, example="+33123456789"),
-     *                 @OA\Property(property="motivation", type="string", nullable=true, example="Pour soutenir votre cause"),
-     *                 @OA\Property(property="is_active", type="boolean", example=true),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
-     *             )
+     *             @OA\Property(property="data", type="array", @OA\Items())
      *         )
      *     ),
      *     @OA\Response(
@@ -261,7 +248,7 @@ class EnfilerController extends BaseController
                 Log::warning("Admin email notification failed: " . $adminEmailException->getMessage());
             }
 
-            return $this->sendResponse(new EnfilerResource($enfiler), 'Don créé avec succès');
+            return $this->sendResponse([], 'Don créé avec succès');
         } catch (Exception $th) {
             Log::error("Error creating don: " . $th->getMessage());
             return $this->sendError('Erreur lors de la création du don');

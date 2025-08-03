@@ -295,29 +295,7 @@ class MemberController extends BaseController
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Membre créé avec succès"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
-     *                 @OA\Property(property="slug", type="string", example="MEM-12345678-1234-1234-1234-123456789abc"),
-     *                 @OA\Property(property="type", type="string", example="individual"),
-     *                 @OA\Property(property="name", type="string", example="Jean Dupont"),
-     *                 @OA\Property(property="bossName", type="string", nullable=true, example="Pierre Dupont"),
-     *                 @OA\Property(property="email", type="string", example="jean.dupont@example.com"),
-     *                 @OA\Property(property="phone", type="string", example="+33123456789"),
-     *                 @OA\Property(property="gender", type="string", nullable=true, example="Masculin"),
-     *                 @OA\Property(property="nationality", type="string", nullable=true, example="Française"),
-     *                 @OA\Property(property="matrimonial", type="string", nullable=true, example="Marié"),
-     *                 @OA\Property(property="is_volunteer", type="boolean", example=true),
-     *                 @OA\Property(property="is_active", type="boolean", example=true),
-     *                 @OA\Property(property="habit", type="string", nullable=true, example="Paris"),
-     *                 @OA\Property(property="bio", type="string", nullable=true, example="Biographie du membre"),
-     *                 @OA\Property(property="job", type="string", nullable=true, example="Ingénieur"),
-     *                 @OA\Property(property="volunteer", type="string", nullable=true, example="Bénévole actif"),
-     *                 @OA\Property(property="origin", type="string", nullable=true, example="France"),
-     *                 @OA\Property(property="web", type="string", nullable=true, example="https://example.com"),
-     *                 @OA\Property(property="activity", type="string", nullable=true, example="Activités du membre"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
-     *             )
+     *             @OA\Property(property="data", type="array", @OA\Items())
      *         )
      *     ),
      *     @OA\Response(
@@ -357,7 +335,7 @@ class MemberController extends BaseController
                 Log::warning("Admin email notification failed: " . $adminEmailException->getMessage());
             }
 
-            return $this->sendResponse(new MemberResource($member), 'Membre créé avec succès');
+            return $this->sendResponse([], 'Membre créé avec succès');
         } catch (Exception $th) {
             Log::error("Error creating member: " . $th->getMessage());
             return $this->sendError('Erreur lors de la création du membre');

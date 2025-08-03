@@ -68,7 +68,7 @@ class NewLetterController extends BaseController
 
         $newLetter = NewLetter::create($data);
 
-        return $this->sendResponse(new NewLetterResource($newLetter), 'Email abonné ajouté avec succès');
+        return $this->sendResponse([], 'Email abonné ajouté avec succès');
     }
 
     // desactivation d'un email
