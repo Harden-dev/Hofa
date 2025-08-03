@@ -29,6 +29,10 @@ return [
         'https://localhost:5173',
         'https://localhost:3000',
         'https://localhost:8080',
+        'https://backend.hofa-ci.org',
+        'https://www.backend.hofa-ci.org',
+        'http://backend.hofa-ci.org',
+        'http://www.backend.hofa-ci.org',
     ],
 
     'allowed_origins_patterns' => [],
