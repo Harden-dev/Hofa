@@ -20,12 +20,11 @@ class Member extends Model
         'phone',
         'email',
         'gender',
+        'date_naissance',
         'nationality',
         'matrimonial',
         'is_volunteer',
         'is_active',
-        'is_approved',
-        'is_rejected',
         'habit',
         'bio',
         'job',
@@ -36,6 +35,8 @@ class Member extends Model
         'approved_at',
         'rejected_at',
         'rejection_reason',
+        'is_approved',
+        'is_rejected'
     ];
 
     protected $casts = [
@@ -43,10 +44,11 @@ class Member extends Model
         'is_active' => 'boolean',
         'is_approved' => 'boolean',
         'is_rejected' => 'boolean',
+        'date_naissance' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'approved_at' => 'datetime',
-        'rejected_at' => 'datetime',
+        'rejected_at' => 'datetime'
     ];
 
     // Scopes pour filtrer les membres
@@ -157,6 +159,32 @@ class Member extends Model
             default => 'En attente'
         };
     }
+
+    /**
+     * Obtenir l'âge calculé à partir de la date de naissance
+     */
+    public function getAgeAttribute()
+    {
+        if (!$this->date_naissance) {
+            return null;
+        }
+        return $this->date_naissance->age;
+    }
+
+    /**
+     * Obtenir la date de naissance formatée
+     */
+    public function getDateNaissanceFormattedAttribute()
+    {
+        if (!$this->date_naissance) {
+            return null;
+        }
+        return $this->date_naissance->format('d/m/Y');
+    }
+
+    /**
+     * Obtenir le statut d'approbation
+     */
 
     // Mutateurs pour formater les données avant sauvegarde
     public function setEmailAttribute($value): void

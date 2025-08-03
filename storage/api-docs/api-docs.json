@@ -1786,13 +1786,34 @@
                                 "required": [
                                     "name",
                                     "email",
-                                    "enfiler_type_id"
+                                    "type",
+                                    "donationType"
                                 ],
                                 "properties": {
+                                    "type": {
+                                        "description": "Type de donateur",
+                                        "type": "string",
+                                        "enum": [
+                                            "individual",
+                                            "company"
+                                        ],
+                                        "example": "individual"
+                                    },
                                     "name": {
                                         "description": "Nom du donateur",
                                         "type": "string",
                                         "example": "Jean Dupont"
+                                    },
+                                    "bossName": {
+                                        "description": "Nom du responsable (pour les entreprises)",
+                                        "type": "string",
+                                        "example": "Pierre Dupont",
+                                        "nullable": true
+                                    },
+                                    "donationType": {
+                                        "description": "Type de don",
+                                        "type": "string",
+                                        "example": "Financier"
                                     },
                                     "email": {
                                         "description": "Email du donateur",
@@ -1806,15 +1827,10 @@
                                         "example": "+33123456789",
                                         "nullable": true
                                     },
-                                    "enfiler_type_id": {
-                                        "description": "ID du type de don",
+                                    "motivation": {
+                                        "description": "Motivation du don",
                                         "type": "string",
-                                        "example": "01jywbsemp4vdwx02h17z5mgah"
-                                    },
-                                    "message": {
-                                        "description": "Message accompagnant le don",
-                                        "type": "string",
-                                        "example": "Merci pour votre travail",
+                                        "example": "Pour soutenir votre cause",
                                         "nullable": true
                                     }
                                 },
@@ -1836,7 +1852,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Don created successfully"
+                                            "example": "Don créé avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -1848,9 +1864,22 @@
                                                     "type": "string",
                                                     "example": "ENF-12345678-1234-1234-1234-123456789abc"
                                                 },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "individual"
+                                                },
                                                 "name": {
                                                     "type": "string",
                                                     "example": "Jean Dupont"
+                                                },
+                                                "bossName": {
+                                                    "type": "string",
+                                                    "example": "Pierre Dupont",
+                                                    "nullable": true
+                                                },
+                                                "donationType": {
+                                                    "type": "string",
+                                                    "example": "Financier"
                                                 },
                                                 "email": {
                                                     "type": "string",
@@ -1861,22 +1890,10 @@
                                                     "example": "+33123456789",
                                                     "nullable": true
                                                 },
-                                                "type_enfiler": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Don financier"
-                                                        },
-                                                        "description": {
-                                                            "type": "string",
-                                                            "example": "Don en argent"
-                                                        }
-                                                    },
-                                                    "type": "object"
+                                                "motivation": {
+                                                    "type": "string",
+                                                    "example": "Pour soutenir votre cause",
+                                                    "nullable": true
                                                 },
                                                 "is_active": {
                                                     "type": "boolean",
@@ -1955,7 +1972,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Enfiler retrieved successfully"
+                                            "example": "Don récupéré avec succès"
                                         },
                                         "data": {
                                             "properties": {
@@ -1969,9 +1986,22 @@
                                                             "type": "string",
                                                             "example": "ENF-12345678-1234-1234-1234-123456789abc"
                                                         },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "example": "individual"
+                                                        },
                                                         "name": {
                                                             "type": "string",
                                                             "example": "Jean Dupont"
+                                                        },
+                                                        "bossName": {
+                                                            "type": "string",
+                                                            "example": "Pierre Dupont",
+                                                            "nullable": true
+                                                        },
+                                                        "donationType": {
+                                                            "type": "string",
+                                                            "example": "Financier"
                                                         },
                                                         "email": {
                                                             "type": "string",
@@ -1982,22 +2012,10 @@
                                                             "example": "+33123456789",
                                                             "nullable": true
                                                         },
-                                                        "type_enfiler": {
-                                                            "properties": {
-                                                                "id": {
-                                                                    "type": "string",
-                                                                    "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                                },
-                                                                "name": {
-                                                                    "type": "string",
-                                                                    "example": "Don financier"
-                                                                },
-                                                                "description": {
-                                                                    "type": "string",
-                                                                    "example": "Don en argent"
-                                                                }
-                                                            },
-                                                            "type": "object"
+                                                        "motivation": {
+                                                            "type": "string",
+                                                            "example": "Pour soutenir votre cause",
+                                                            "nullable": true
                                                         },
                                                         "is_active": {
                                                             "type": "boolean",
@@ -3614,7 +3632,7 @@
                     "Membres"
                 ],
                 "summary": "Approuver un membre",
-                "description": "Approuver un membre et envoyer un email de confirmation",
+                "description": "Approuver la demande d'inscription d'un membre",
                 "operationId": "approveMembre",
                 "parameters": [
                     {
@@ -3634,10 +3652,10 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "message": {
-                                        "description": "Message personnalisé à inclure dans l'email",
+                                    "custom_message": {
+                                        "description": "Message personnalisé pour le membre",
                                         "type": "string",
-                                        "example": "Votre demande a été approuvée avec succès",
+                                        "example": "Bienvenue dans notre communauté !",
                                         "nullable": true
                                     }
                                 },
@@ -3663,31 +3681,22 @@
                                         },
                                         "data": {
                                             "properties": {
-                                                "member": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Jean Dupont"
-                                                        },
-                                                        "email": {
-                                                            "type": "string",
-                                                            "example": "jean.dupont@example.com"
-                                                        },
-                                                        "is_active": {
-                                                            "type": "boolean",
-                                                            "example": true
-                                                        },
-                                                        "approved_at": {
-                                                            "type": "string",
-                                                            "format": "date-time",
-                                                            "example": "2025-06-28T22:35:27.000000Z"
-                                                        }
-                                                    },
-                                                    "type": "object"
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "01jywbsemp4vdwx02h17z5mgah"
+                                                },
+                                                "is_approved": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "approved_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-08-01T10:30:00.000000Z"
                                                 }
                                             },
                                             "type": "object"
@@ -3719,7 +3728,7 @@
                         }
                     },
                     "400": {
-                        "description": "Membre déjà approuvé",
+                        "description": "Membre déjà approuvé ou rejeté",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3730,23 +3739,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Ce membre est déjà approuvé"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Unauthenticated"
+                                            "example": "Ce membre a déjà été traité"
                                         }
                                     },
                                     "type": "object"
@@ -3768,7 +3761,7 @@
                     "Membres"
                 ],
                 "summary": "Rejeter un membre",
-                "description": "Rejeter un membre et envoyer un email de notification",
+                "description": "Rejeter la demande d'inscription d'un membre",
                 "operationId": "rejectMembre",
                 "parameters": [
                     {
@@ -3788,18 +3781,18 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "reason"
+                                    "rejection_reason"
                                 ],
                                 "properties": {
-                                    "reason": {
+                                    "rejection_reason": {
                                         "description": "Raison du rejet",
                                         "type": "string",
                                         "example": "Informations incomplètes"
                                     },
-                                    "message": {
-                                        "description": "Message personnalisé à inclure dans l'email",
+                                    "custom_message": {
+                                        "description": "Message personnalisé pour le membre",
                                         "type": "string",
-                                        "example": "Nous ne pouvons pas accepter votre demande pour le moment",
+                                        "example": "Nous ne pouvons pas accepter votre demande pour le moment.",
                                         "nullable": true
                                     }
                                 },
@@ -3825,35 +3818,26 @@
                                         },
                                         "data": {
                                             "properties": {
-                                                "member": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "example": "01jywbsemp4vdwx02h17z5mgah"
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Jean Dupont"
-                                                        },
-                                                        "email": {
-                                                            "type": "string",
-                                                            "example": "jean.dupont@example.com"
-                                                        },
-                                                        "is_active": {
-                                                            "type": "boolean",
-                                                            "example": false
-                                                        },
-                                                        "rejected_at": {
-                                                            "type": "string",
-                                                            "format": "date-time",
-                                                            "example": "2025-06-28T22:35:27.000000Z"
-                                                        },
-                                                        "rejection_reason": {
-                                                            "type": "string",
-                                                            "example": "Informations incomplètes"
-                                                        }
-                                                    },
-                                                    "type": "object"
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "01jywbsemp4vdwx02h17z5mgah"
+                                                },
+                                                "is_rejected": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "rejected_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-08-01T10:30:00.000000Z"
+                                                },
+                                                "rejection_reason": {
+                                                    "type": "string",
+                                                    "example": "Informations incomplètes"
                                                 }
                                             },
                                             "type": "object"
@@ -3885,7 +3869,7 @@
                         }
                     },
                     "400": {
-                        "description": "Membre déjà rejeté",
+                        "description": "Membre déjà approuvé ou rejeté",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3896,7 +3880,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Ce membre est déjà rejeté"
+                                            "example": "Ce membre a déjà été traité"
                                         }
                                     },
                                     "type": "object"
@@ -3905,33 +3889,18 @@
                         }
                     },
                     "422": {
-                        "description": "Erreur de validation",
+                        "description": "Données de validation invalides",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "La raison du rejet est requise"
-                                        },
-                                        "errors": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Unauthenticated"
                                         }
                                     },
                                     "type": "object"

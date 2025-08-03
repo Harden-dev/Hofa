@@ -196,13 +196,14 @@ class EnfilerController extends BaseController
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "email","enfiler_type_id"},
+     *             required={"name", "email", "type", "donationType"},
+     *             @OA\Property(property="type", type="string", enum={"individual", "company"}, example="individual", description="Type de donateur"),
      *             @OA\Property(property="name", type="string", example="Jean Dupont", description="Nom du donateur"),
+     *             @OA\Property(property="bossName", type="string", nullable=true, example="Pierre Dupont", description="Nom du responsable (pour les entreprises)"),
+     *             @OA\Property(property="donationType", type="string", example="Financier", description="Type de don"),
      *             @OA\Property(property="email", type="string", format="email", example="jean@example.com", description="Email du donateur"),
      *             @OA\Property(property="phone", type="string", nullable=true, example="+33123456789", description="Téléphone du donateur"),
-     *
-     *             @OA\Property(property="enfiler_type_id", type="string", example="01jywbsemp4vdwx02h17z5mgah", description="ID du type de don"),
-     *             @OA\Property(property="message", type="string", nullable=true, example="Merci pour votre travail", description="Message accompagnant le don")
+     *             @OA\Property(property="motivation", type="string", nullable=true, example="Pour soutenir votre cause", description="Motivation du don")
      *         )
      *     ),
      *     @OA\Response(
@@ -210,19 +211,17 @@ class EnfilerController extends BaseController
      *         description="Don créé avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Don created successfully"),
+     *             @OA\Property(property="message", type="string", example="Don créé avec succès"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
      *                 @OA\Property(property="slug", type="string", example="ENF-12345678-1234-1234-1234-123456789abc"),
+     *                 @OA\Property(property="type", type="string", example="individual"),
      *                 @OA\Property(property="name", type="string", example="Jean Dupont"),
+     *                 @OA\Property(property="bossName", type="string", nullable=true, example="Pierre Dupont"),
+     *                 @OA\Property(property="donationType", type="string", example="Financier"),
      *                 @OA\Property(property="email", type="string", example="jean@example.com"),
      *                 @OA\Property(property="phone", type="string", nullable=true, example="+33123456789"),
-     *
-     *                 @OA\Property(property="type_enfiler", type="object",
-     *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
-     *                     @OA\Property(property="name", type="string", example="Don financier"),
-     *                     @OA\Property(property="description", type="string", example="Don en argent")
-     *                 ),
+     *                 @OA\Property(property="motivation", type="string", nullable=true, example="Pour soutenir votre cause"),
      *                 @OA\Property(property="is_active", type="boolean", example=true),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
@@ -289,20 +288,18 @@ class EnfilerController extends BaseController
      *         description="Don récupéré avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Enfiler retrieved successfully"),
+     *             @OA\Property(property="message", type="string", example="Don récupéré avec succès"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="items", type="object",
      *                     @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
      *                     @OA\Property(property="slug", type="string", example="ENF-12345678-1234-1234-1234-123456789abc"),
+     *                     @OA\Property(property="type", type="string", example="individual"),
      *                     @OA\Property(property="name", type="string", example="Jean Dupont"),
+     *                     @OA\Property(property="bossName", type="string", nullable=true, example="Pierre Dupont"),
+     *                     @OA\Property(property="donationType", type="string", example="Financier"),
      *                     @OA\Property(property="email", type="string", example="jean@example.com"),
      *                     @OA\Property(property="phone", type="string", nullable=true, example="+33123456789"),
-     *
-     *                     @OA\Property(property="type_enfiler", type="object",
-     *                         @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
-     *                         @OA\Property(property="name", type="string", example="Don financier"),
-     *                         @OA\Property(property="description", type="string", example="Don en argent")
-     *                     ),
+     *                     @OA\Property(property="motivation", type="string", nullable=true, example="Pour soutenir votre cause"),
      *                     @OA\Property(property="is_active", type="boolean", example=true),
      *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z"),
      *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-06-28T22:35:27.000000Z")
@@ -329,7 +326,7 @@ class EnfilerController extends BaseController
      */
     public function show(Enfiler $enfiler)
     {
-        return $this->sendResponse(['items' => new EnfilerResource($enfiler)], 'Enfiler retrieved successfully');
+        return $this->sendResponse(['items' => new EnfilerResource($enfiler)], 'Don récupéré avec succès');
     }
 
     /**
