@@ -1,46 +1,21 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
-    */
-
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'http://localhost:8080',
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:8080',
-        'https://localhost:5173',
-        'https://localhost:3000',
-        'https://localhost:8080',
         'https://backend.hofa-ci.org',
         'https://www.backend.hofa-ci.org',
         'http://backend.hofa-ci.org',
         'http://www.backend.hofa-ci.org',
-        // Ajout des origines pour le développement local
-        'http://localhost',
-        'https://localhost',
-        'http://127.0.0.1',
-        'https://127.0.0.1',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https?://localhost(:\d+)?$#',     // Accepte localhost avec n'importe quel port
+        '#^https?://127\.0\.0\.1(:\d+)?$#', // Accepte 127.0.0.1 avec n'importe quel port
+    ],
 
     'allowed_headers' => ['*'],
 
@@ -49,5 +24,4 @@ return [
     'max_age' => 0,
 
     'supports_credentials' => true,
-
 ];

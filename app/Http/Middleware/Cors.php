@@ -9,11 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Cors
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         // Log pour déboguer
@@ -21,28 +16,49 @@ class Cors
         Log::info('CORS Middleware - Method: ' . $request->method());
         Log::info('CORS Middleware - URL: ' . $request->url());
 
-        $response = $next($request);
-
-        // Charger la configuration CORS
-        $corsConfig = config('cors');
-
-        // Origines autorisées depuis la configuration
-        $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
-
-                        // Vérifier si l'origine de la requête est autorisée
-        $origin = $request->header('Origin');
-
-        if (in_array($origin, $allowedOrigins)) {
-            $response->headers->set('Access-Control-Allow-Origin', $origin);
-        } elseif ($origin) {
-            // Si l'origine n'est pas dans la liste mais qu'on a une origine, l'accepter temporairement pour le debug
-            $response->headers->set('Access-Control-Allow-Origin', $origin);
-            Log::warning('CORS: Origin not in allowed list but accepted: ' . $origin);
+        // Gérer les requêtes OPTIONS (preflight) d'abord
+        if ($request->isMethod('OPTIONS')) {
+            return $this->handlePreflightRequest($request);
         }
 
-        // En-têtes CORS depuis la configuration
-        $response->headers->set('Access-Control-Allow-Methods', implode(', ', $corsConfig['allowed_methods'] ?? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']));
-        $response->headers->set('Access-Control-Allow-Headers', implode(', ', $corsConfig['allowed_headers'] ?? ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-CSRF-TOKEN']));
+        $response = $next($request);
+        return $this->addCorsHeaders($request, $response);
+    }
+
+    private function handlePreflightRequest(Request $request): Response
+    {
+        $response = response('', 200);
+        return $this->addCorsHeaders($request, $response);
+    }
+
+    private function addCorsHeaders(Request $request, Response $response): Response
+    {
+        $corsConfig = config('cors');
+        $origin = $request->header('Origin');
+
+        // Vérifier si l'origine est autorisée
+        if ($this->isOriginAllowed($origin, $corsConfig)) {
+            $response->headers->set('Access-Control-Allow-Origin', $origin);
+        } else {
+            Log::warning('CORS: Origin not allowed: ' . $origin);
+            // Ne pas définir l'header si l'origine n'est pas autorisée
+        }
+
+        // Autres headers CORS
+        $allowedMethods = $corsConfig['allowed_methods'] ?? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+        $allowedHeaders = $corsConfig['allowed_headers'] ?? ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-CSRF-TOKEN'];
+
+        if (is_array($allowedMethods) && in_array('*', $allowedMethods)) {
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        } else {
+            $response->headers->set('Access-Control-Allow-Methods', implode(', ', $allowedMethods));
+        }
+
+        if (is_array($allowedHeaders) && in_array('*', $allowedHeaders)) {
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN, X-Requested-With');
+        } else {
+            $response->headers->set('Access-Control-Allow-Headers', implode(', ', $allowedHeaders));
+        }
 
         if ($corsConfig['supports_credentials'] ?? false) {
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
@@ -52,19 +68,29 @@ class Cors
             $response->headers->set('Access-Control-Max-Age', $corsConfig['max_age']);
         }
 
-        // Gérer les requêtes OPTIONS (preflight)
-        if ($request->isMethod('OPTIONS')) {
-            $response->setStatusCode(200);
-            $response->setContent('');
+        return $response;
+    }
+
+    private function isOriginAllowed(?string $origin, array $corsConfig): bool
+    {
+        if (!$origin) {
+            return false;
         }
 
-        // Log des headers envoyés
-        Log::info('CORS Headers set: ' . json_encode([
-            'Access-Control-Allow-Origin' => $response->headers->get('Access-Control-Allow-Origin'),
-            'Access-Control-Allow-Methods' => $response->headers->get('Access-Control-Allow-Methods'),
-            'Access-Control-Allow-Headers' => $response->headers->get('Access-Control-Allow-Headers'),
-        ]));
+        // Vérifier les origines exactes
+        $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
+        if (in_array($origin, $allowedOrigins) || in_array('*', $allowedOrigins)) {
+            return true;
+        }
 
-        return $response;
+        // Vérifier les patterns
+        $allowedOriginPatterns = $corsConfig['allowed_origins_patterns'] ?? [];
+        foreach ($allowedOriginPatterns as $pattern) {
+            if (preg_match($pattern, $origin)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
