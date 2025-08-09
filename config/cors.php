@@ -23,6 +23,7 @@ return [
         // Origines de production spécifiques
         'https://hofa-ci.org',
         'https://www.hofa-ci.org',
+        'http://localhost:5173',
     ],
 
     'allowed_origins_patterns' => [
