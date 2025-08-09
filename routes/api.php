@@ -12,16 +12,6 @@ use App\Http\Controllers\TypeBenevole\TypeBenevoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route pour gérer les requêtes OPTIONS (preflight CORS) - Version simplifiée
-Route::options('{any}', function (Request $request) {
-    return response('', 200)
-        ->header('Access-Control-Allow-Origin', $request->header('Origin'))
-        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-        ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN')
-        ->header('Access-Control-Allow-Credentials', 'true')
-        ->header('Access-Control-Max-Age', '86400');
-})->where('any', '.*');
-
 // Groupe API v1
 Route::prefix('v1')->group(function () {
 

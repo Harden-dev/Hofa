@@ -20,26 +20,33 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:5173',
-        'https://localhost:5173', // Ajout pour le HTTPS local
-        'http://127.0.0.1:5173',
-        'https://127.0.0.1:5173',
+        // Origines de production spécifiques
+        'https://hofa-ci.org',
+        'https://www.hofa-ci.org',
     ],
 
     'allowed_origins_patterns' => [
+        // Patterns pour le développement local
         '#^https?://localhost(:\d+)?$#',
         '#^https?://127\.0\.0\.1(:\d+)?$#',
-        '#^https://backend\.hofa-ci\.org$#', // Correction: HTTPS uniquement
-        '#^https://www\.backend\.hofa-ci\.org$#', // Correction: HTTPS uniquement
-        // Suppression des patterns HTTP pour le domaine de production
+
+        // Patterns pour la production (si vous avez des sous-domaines)
+        '#^https://([a-z0-9-]+\.)?hofa-ci\.org$#',
+
+        // Pattern pour le backend (si nécessaire)
+        '#^https://backend\.hofa-ci\.org$#',
+        '#^https://www\.backend\.hofa-ci\.org$#',
     ],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        // Ajoutez ici les headers que votre frontend doit pouvoir lire
+        // Par exemple : 'X-Total-Count', 'X-Page-Count'
+    ],
 
-    'max_age' => 86400, // Cache preflight pendant 24h
+    'max_age' => 86400, // 24 heures
 
-    'supports_credentials' => true, // Correction: mettre à true si vous utilisez des cookies/auth
+    'supports_credentials' => true,
 
 ];
