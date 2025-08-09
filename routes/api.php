@@ -22,8 +22,8 @@ Route::options('{any}', function (Request $request) {
         ->header('Access-Control-Max-Age', '86400');
 })->where('any', '.*');
 
-// Appliquer le middleware CORS à toutes les routes API
-Route::middleware(['cors'])->prefix('v1')->group(function () {
+// Groupe API v1
+Route::prefix('v1')->group(function () {
 
     // login route
     Route::post('login', [AuthController::class, 'login']);
