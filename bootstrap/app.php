@@ -19,8 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Gestion des erreurs d'authentification
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException  $e, Request $request) {
-            // Vérification pour les APIs (votre code est parfait !)
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+
+
             if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
                 return response()->json([
                     'message' => 'Token not provided or invalid',
@@ -52,5 +53,41 @@ return Application::configure(basePath: dirname(__DIR__))
                     'status' => 404
                 ], 404);
             }
+        });
+
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+
+            if ($request->is('api/*')) {
+
+
+                if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                    return response()->json([
+                        'message' => 'Non authentifié',
+                        'error' => 'Token non fourni ou invalide',
+                        'status' => 401
+                    ], 401);
+                }
+
+
+                if ($e instanceof \Illuminate\Validation\ValidationException) {
+                    return response()->json([
+                        'message' => 'Validation échouée',
+                        'errors' => $e->errors(),
+                        'status' => 422
+                    ], 422);
+                }
+
+                // 404
+                if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                    return response()->json([
+                        'message' => 'Ressource non trouvée',
+                        'status' => 404
+                    ], 404);
+                }
+            }
+
+            // Pour les routes web, laisser Laravel gérer normalement
+            return null;
         });
     })->create();
