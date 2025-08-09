@@ -15,19 +15,44 @@ use Illuminate\Support\Facades\Route;
 // Route pour gérer les requêtes OPTIONS (preflight CORS)
 Route::options('{any}', function (Request $request) {
     $corsConfig = config('cors');
-    $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
     $origin = $request->header('Origin');
 
     $response = response('', 200);
 
-    if (in_array($origin, $allowedOrigins)) {
+    // Autoriser l'origine si elle correspond à la liste exacte ou aux patterns
+    $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
+    $allowedOriginPatterns = $corsConfig['allowed_origins_patterns'] ?? [];
+    $isAllowed = in_array($origin, $allowedOrigins);
+    if (!$isAllowed && $origin) {
+        foreach ($allowedOriginPatterns as $pattern) {
+            if (@preg_match($pattern, $origin)) { $isAllowed = true; break; }
+        }
+    }
+    if ($isAllowed && $origin) {
         $response->header('Access-Control-Allow-Origin', $origin);
     }
 
-    return $response
-        ->header('Access-Control-Allow-Methods', implode(', ', $corsConfig['allowed_methods'] ?? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']))
-        ->header('Access-Control-Allow-Headers', implode(', ', $corsConfig['allowed_headers'] ?? ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-CSRF-TOKEN']))
-        ->header('Access-Control-Allow-Credentials', 'true');
+    // Méthodes autorisées (développer l'étoile en liste explicite)
+    $allowedMethods = $corsConfig['allowed_methods'] ?? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+    if (is_array($allowedMethods) && in_array('*', $allowedMethods)) {
+        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    } else {
+        $response->header('Access-Control-Allow-Methods', implode(', ', $allowedMethods));
+    }
+
+    // Headers autorisés (développer l'étoile en liste utile)
+    $allowedHeaders = $corsConfig['allowed_headers'] ?? ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-CSRF-TOKEN'];
+    if (is_array($allowedHeaders) && in_array('*', $allowedHeaders)) {
+        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN, X-Requested-With');
+    } else {
+        $response->header('Access-Control-Allow-Headers', implode(', ', $allowedHeaders));
+    }
+
+    if ($corsConfig['supports_credentials'] ?? false) {
+        $response->header('Access-Control-Allow-Credentials', 'true');
+    }
+
+    return $response;
 })->where('any', '.*');
 
 Route::prefix('v1')->group(function () {
