@@ -45,17 +45,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*')) {
-                return response()->json([
-                    'message' => 'Resource not found',
-                    'error' => 'Not Found',
-                    'status' => 404
-                ], 404);
-            }
-        });
-
-
         $exceptions->render(function (\Throwable $e, Request $request) {
 
             if ($request->is('api/*')) {

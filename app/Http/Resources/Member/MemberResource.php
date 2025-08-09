@@ -44,14 +44,6 @@ class MemberResource extends JsonResource
             'is_rejected' => $this->is_rejected,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-
-            // Accesseurs calculés
-            'full_name' => $this->full_name,
-            'display_name' => $this->display_name,
-            'status_text' => $this->status_text,
-            'volunteer_status_text' => $this->volunteer_status_text,
-            'approval_status' => $this->approval_status,
-            'approval_status_text' => $this->approval_status_text,
         ];
     }
 }
