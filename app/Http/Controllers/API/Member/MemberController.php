@@ -335,7 +335,7 @@ class MemberController extends BaseController
                 Log::warning("Admin email notification failed: " . $adminEmailException->getMessage());
             }
 
-            return $this->sendResponse([], 'Membre créé avec succès');
+            return $this->sendResponse([], 'Membre créé avec succès', [], 201);
         } catch (Exception $th) {
             Log::error("Error creating member: " . $th->getMessage());
             return $this->sendError('Erreur lors de la création du membre');
@@ -661,11 +661,11 @@ class MemberController extends BaseController
     {
         try {
             if (!$member) {
-                return $this->sendError([], 'Membre non trouvé', 404);
+                return $this->sendError('Membre non trouvé', [], 404);
             }
             // Vérifier si le membre a déjà été traité
             if ($member->is_approved || $member->is_rejected) {
-                return $this->sendError('Ce membre a déjà été traité (approuvé ou rejeté)');
+                return $this->sendError('Ce membre a déjà été traité (approuvé ou rejeté)', [], 400);
             }
 
             // Mettre à jour le statut d'approbation
@@ -776,7 +776,7 @@ class MemberController extends BaseController
     {
         try {
             if (!$member) {
-                return $this->sendError([], 'Membre non trouvé', 404);
+                return $this->sendError('Membre non trouvé', [], 404);
             }
 
             // Validation de la raison du rejet
@@ -829,7 +829,7 @@ class MemberController extends BaseController
             ], 'Membre rejeté avec succès');
 
         } catch (ValidationException $e) {
-            return $this->sendError('Erreur de validation', $e->errors());
+            return $this->sendError('Erreur de validation', $e->errors(), 422);
         } catch (Exception $th) {
             Log::error("Error rejecting member {$member->id}: " . $th->getMessage());
             return $this->sendError('Erreur lors du rejet du membre');

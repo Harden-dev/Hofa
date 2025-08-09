@@ -18,12 +18,12 @@ use Illuminate\Http\Request;
  *         url="https://opensource.org/licenses/MIT"
  *     )
  * )
- * 
+ *
  * @OA\Server(
  *     url=L5_SWAGGER_CONST_HOST,
  *     description="API Server"
  * )
- * 
+ *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",
@@ -34,7 +34,7 @@ use Illuminate\Http\Request;
 class BaseController extends Controller
 {
     //
-    public function sendResponse($result, $message, $extra = [])
+    public function sendResponse($result, $message, $extra = [], $status = 200)
     {
         $response = [
             'success' => true,
@@ -47,7 +47,7 @@ class BaseController extends Controller
             $response = array_merge($response, $extra);
         }
 
-        return response()->json($response, 200);
+        return response()->json($response, $status);
     }
 
     public function sendError($error, $errorMessages = [], $code = 404)
@@ -65,7 +65,7 @@ class BaseController extends Controller
         return response()->json($response, $code);
     }
 
-    // error sur unicité d'un mail 
+    // error sur unicité d'un mail
     public function sendUniqueEmailError($error, $errorMessages = [], $code = 400)
     {
         $response = [

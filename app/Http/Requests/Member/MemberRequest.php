@@ -22,8 +22,6 @@ class MemberRequest extends FormRequest
      */
     public function rules(): array
     {
-        $memberId = $this->route('member')?->id;
-
         return [
             'type' => ['required', 'string', Rule::in(['individual', 'company'])],
             'name' => ['nullable', 'string', 'max:255'],
