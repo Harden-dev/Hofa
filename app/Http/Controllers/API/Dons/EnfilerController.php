@@ -251,7 +251,7 @@ class EnfilerController extends BaseController
             return $this->sendResponse([], 'Don créé avec succès', [], 201);
         } catch (Exception $th) {
             Log::error("Error creating don: " . $th->getMessage());
-            return $this->sendError('Erreur lors de la création du don');
+            return $this->sendError('Erreur lors de la création du don', [], 500);
         }
     }
 

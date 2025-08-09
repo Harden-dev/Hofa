@@ -184,7 +184,7 @@ class ContactController extends BaseController
 
             Mail::to(env('MAIL_FROM_ADDRESS'))->cc('christyao1299@gmail.com')->send(new ContactNotification($contact));
             Log::info('email sent to ' . env('MAIL_FROM_ADDRESS'));
-            return $this->sendResponse([], 'Contact created successfully', [], 201);
+            return $this->sendResponse([], 'Contact created successfully', [], 201  );
         } catch (Exception $th) {
             Log::info("Error creating contact: " . $th->getMessage());
             return $this->sendError('Error creating contact', $th->getMessage(), 500);
