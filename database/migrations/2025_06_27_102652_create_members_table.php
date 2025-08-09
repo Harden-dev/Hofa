@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('nationality')->nullable();
             $table->string('matrimonial')->nullable();
           //  $table->ulid('benevolent_type_id');
-            $table->boolean('is_volunteer')->default(false)->nullable();
+            $table->boolean('is_volunteer')->default(false);
             $table->string('habit')->nullable();
             $table->string('bio')->nullable();
             $table->string('job')->nullable();

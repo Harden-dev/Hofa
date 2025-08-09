@@ -308,39 +308,22 @@ class MemberController extends BaseController
      *     )
      * )
      */
-    public function store(MemberRequest $request)
-    {
-        $data = $request->all();
-        $data['slug'] = 'MEM-' . Str::uuid();
-
-        // Initialiser les champs d'approbation par défaut
+   public function store(MemberRequest $request)
+   {
+    $data = $request->all();
+    try {
+        $data['slug'] = Str::uuid();
         $data['is_approved'] = false;
         $data['is_rejected'] = false;
-        $data['is_active'] = false; // Par défaut, le compte est inactif jusqu'à approbation
 
-        try {
-            $member = Member::create($data);
-
-            // Email pour informer le membre que son compte a bien été créé
-            try {
-                Mail::to($member->email)->send(new MemberNotification($member));
-            } catch (Exception $emailException) {
-                Log::warning("Email notification failed for member {$member->email}: " . $emailException->getMessage());
-            }
-
-            // Email pour informer l'admin qu'il y a un nouveau membre
-            try {
-                Mail::to(env('MAIL_FROM_ADDRESS'))->send(new MemberNotification($member, true));
-            } catch (Exception $adminEmailException) {
-                Log::warning("Admin email notification failed: " . $adminEmailException->getMessage());
-            }
-
-            return $this->sendResponse([], 'Membre créé avec succès', [], 201);
-        } catch (Exception $th) {
-            Log::error("Error creating member: " . $th->getMessage());
-            return $this->sendError('Erreur lors de la création du membre');
-        }
+        $member = Member::create($data);
+        return $this->sendResponse('Membre créé avec succès', [], 201);
+        Log::info('Member created successfully');
+    } catch (Exception $th) {
+        Log::error('Error creating member: ' . $th->getMessage());
+        return $this->sendError('Erreur lors de la création du membre', [], 500);
     }
+   }
 
     /**
      * @OA\Put(
