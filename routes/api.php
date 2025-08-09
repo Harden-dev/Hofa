@@ -12,50 +12,18 @@ use App\Http\Controllers\TypeBenevole\TypeBenevoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route pour gérer les requêtes OPTIONS (preflight CORS)
+// Route pour gérer les requêtes OPTIONS (preflight CORS) - Version simplifiée
 Route::options('{any}', function (Request $request) {
-    $corsConfig = config('cors');
-    $origin = $request->header('Origin');
-
-    $response = response('', 200);
-
-    // Autoriser l'origine si elle correspond à la liste exacte ou aux patterns
-    $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
-    $allowedOriginPatterns = $corsConfig['allowed_origins_patterns'] ?? [];
-    $isAllowed = in_array($origin, $allowedOrigins);
-    if (!$isAllowed && $origin) {
-        foreach ($allowedOriginPatterns as $pattern) {
-            if (@preg_match($pattern, $origin)) { $isAllowed = true; break; }
-        }
-    }
-    if ($isAllowed && $origin) {
-        $response->header('Access-Control-Allow-Origin', $origin);
-    }
-
-    // Méthodes autorisées (développer l'étoile en liste explicite)
-    $allowedMethods = $corsConfig['allowed_methods'] ?? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
-    if (is_array($allowedMethods) && in_array('*', $allowedMethods)) {
-        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    } else {
-        $response->header('Access-Control-Allow-Methods', implode(', ', $allowedMethods));
-    }
-
-    // Headers autorisés (développer l'étoile en liste utile)
-    $allowedHeaders = $corsConfig['allowed_headers'] ?? ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-CSRF-TOKEN'];
-    if (is_array($allowedHeaders) && in_array('*', $allowedHeaders)) {
-        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN, X-Requested-With');
-    } else {
-        $response->header('Access-Control-Allow-Headers', implode(', ', $allowedHeaders));
-    }
-
-    if ($corsConfig['supports_credentials'] ?? false) {
-        $response->header('Access-Control-Allow-Credentials', 'true');
-    }
-
-    return $response;
+    return response('', 200)
+        ->header('Access-Control-Allow-Origin', $request->header('Origin'))
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN')
+        ->header('Access-Control-Allow-Credentials', 'true')
+        ->header('Access-Control-Max-Age', '86400');
 })->where('any', '.*');
 
-Route::prefix('v1')->group(function () {
+// Appliquer le middleware CORS à toutes les routes API
+Route::middleware(['cors'])->prefix('v1')->group(function () {
 
     // login route
     Route::post('login', [AuthController::class, 'login']);
@@ -104,7 +72,6 @@ Route::prefix('v1')->group(function () {
         Route::patch('membres/{member}/reject', [MemberController::class, 'reject']);
 
         // type benevole route
-
         Route::get('type-benevoles', [TypeBenevoleController::class, 'index']);
         Route::post('type-benevoles', [TypeBenevoleController::class, 'store']);
         Route::get('type-benevoles/{typeBenevole}', [TypeBenevoleController::class, 'show']);
@@ -119,7 +86,6 @@ Route::prefix('v1')->group(function () {
         Route::delete('users/{user}', [UserController::class, 'desactivate']);
 
         // article
-
         Route::post('/articles', [ArticleController::class, 'store']);
         Route::put('/articles/{article}', [ArticleController::class, 'update']);
         Route::delete('/articles/{article}', [ArticleController::class, 'desactivate']);

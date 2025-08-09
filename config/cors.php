@@ -19,23 +19,27 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'https://localhost:5173', // Ajout pour le HTTPS local
+        'http://127.0.0.1:5173',
+        'https://127.0.0.1:5173',
+    ],
 
     'allowed_origins_patterns' => [
         '#^https?://localhost(:\d+)?$#',
         '#^https?://127\.0\.0\.1(:\d+)?$#',
-        '#^https?://backend\.hofa-ci\.org$#',
-        '#^https?://www\.backend\.hofa-ci\.org$#',
-        '#^http?://backend\.hofa-ci\.org$#',
-        '#^http?://www\.backend\.hofa-ci\.org$#',
+        '#^https://backend\.hofa-ci\.org$#', // Correction: HTTPS uniquement
+        '#^https://www\.backend\.hofa-ci\.org$#', // Correction: HTTPS uniquement
+        // Suppression des patterns HTTP pour le domaine de production
     ],
 
     'allowed_headers' => ['*'],
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 86400, // Cache preflight pendant 24h
 
-    'supports_credentials' => false,
+    'supports_credentials' => true, // Correction: mettre à true si vous utilisez des cookies/auth
 
 ];
