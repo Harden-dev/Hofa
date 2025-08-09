@@ -709,10 +709,10 @@ class ArticleController extends BaseController
         try {
             $article->update(['is_active' => false]);
 
-            return $this->sendResponse([], 'Article deleted successfully');
+            return $this->sendResponse([], 'Article deleted successfully', [], 200);
         } catch (Exception $th) {
             Log::info("Error deleting article: " . $th->getMessage());
-            return $this->sendError('Error deleting article');
+            return $this->sendError('Error deleting article', [], 500);
         }
     }
 }

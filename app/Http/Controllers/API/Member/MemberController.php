@@ -317,7 +317,7 @@ class MemberController extends BaseController
         $data['is_rejected'] = false;
 
         $member = Member::create($data);
-        return $this->sendResponse('Membre créé avec succès', [], 201);
+        return $this->sendResponse([], 'Membre créé avec succès',[], 201);
         Log::info('Member created successfully');
     } catch (Exception $th) {
         Log::error('Error creating member: ' . $th->getMessage());

@@ -248,7 +248,7 @@ class EnfilerController extends BaseController
                 Log::warning("Admin email notification failed: " . $adminEmailException->getMessage());
             }
 
-            return $this->sendResponse([], 'Don créé avec succès');
+            return $this->sendResponse([], 'Don créé avec succès', [], 201);
         } catch (Exception $th) {
             Log::error("Error creating don: " . $th->getMessage());
             return $this->sendError('Erreur lors de la création du don');

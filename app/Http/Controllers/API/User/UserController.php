@@ -174,7 +174,7 @@ class UserController extends BaseController
      */
     public function show(User $user)
     {
-        return $this->sendResponse( ['items' => new UserResource($user)], 'User retrieved successfully');
+        return $this->sendResponse( ['items' => new UserResource($user)], 'User retrieved successfully', [], 200);
     }
 
     /**
@@ -237,7 +237,7 @@ class UserController extends BaseController
         try {
             $user = User::create($data);
 
-            return $this->sendResponse([], 'User created successfully');
+            return $this->sendResponse([], 'User created successfully', [], 201);
         } catch (Exception $th) {
             Log::info("Error creating user: " . $th->getMessage());
             return $this->sendError('Error creating user');
