@@ -40,7 +40,7 @@ class ArticleController extends BaseController
      *                 @OA\Property(property="content", type="string", example="Contenu de l'article...", description="Article content in French"),
      *                 @OA\Property(property="cover_image", type="file", format="binary", description="Cover image (max 2MB)"),
      *                 @OA\Property(property="gallery[]", type="array", @OA\Items(type="file", format="binary"), description="Gallery images (max 2MB each)"),
-     *                 @OA\Property(property="captions[]", type="array", @OA\Items(type="string"), description="Captions for gallery images")
+     *                 @OA\Property(property="category", type="string", example="education", description="Article category")
      *             )
      *         )
      *     ),
@@ -70,8 +70,8 @@ class ArticleController extends BaseController
             'description' => 'nullable|string',
             'cover_image' => 'nullable|image|max:2048',
             'gallery.*' => 'nullable|image|max:2048',
-            'captions' => 'nullable|array',
-            'captions.*' => 'nullable|string',
+            'gallery' => 'nullable|array',
+            'category' => 'required|string|in:education,santé,formation,humanitaire,developpement_communautaire,actions_sociales,insertion,autre',
         ]);
 
         // Génération du slug unique
@@ -108,13 +108,14 @@ class ArticleController extends BaseController
                 : TranslationService::translate($data['content'], $sourceLang, $locale);
 
             $description = $locale === $sourceLang ? $data['description'] : TranslationService::translate($data['description'], $sourceLang, $locale);
-
+            //$category = $locale === $sourceLang ? $data['category'] : TranslationService::translate($data['category'], $sourceLang, $locale);
             ArticleTranslation::create([
                 'article_id' => $article->id,
                 'locale' => $locale,
                 'title' => $title,
                 'content' => $content,
                 'description' => $description,
+                'category' => $data['category'],
             ]);
         }
 
@@ -214,9 +215,10 @@ class ArticleController extends BaseController
     public function index(Request $request)
     {
         $locale = $request->header('Accept-Language') ?? $request->query('locale', 'fr');
-        $perPage = $request->query('per_page', 10);
+        $perPage = $request->query('per_page', 50);
         $page = $request->query('page', 1);
         $status = $request->query('status', 'activated'); // activated, desactivated, all
+        $category = $request->query('category', 'all'); // all, education, santé, formation, humanitaire, developpement_communautaire, actions_sociales, insertion
         $search = $request->query('search', '');
 
         $query = Article::with([
@@ -229,6 +231,14 @@ class ArticleController extends BaseController
             $query->where('is_active', true);
         } elseif ($status === 'desactivated') {
             $query->where('is_active', false);
+        }
+
+        // filtrage par catégorie
+        if ($category !== 'all') {
+            $query->whereHas('translations', function ($q) use ($category, $locale) {
+                $q->where('locale', $locale)
+                    ->where('category', $category);
+            });
         }
         // Si status === 'all', pas de filtre
 
@@ -256,6 +266,7 @@ class ArticleController extends BaseController
                         'title' => $t?->title ?? '[non traduit]',
                         'content' => $t?->content ?? '[non traduit]',
                         'description' => $t?->description ?? '[non traduit]',
+                        'category' => $t?->category ?? '[non traduit]',
                         'gallery' => $article->images->map(fn($img) => [
                             'url' => asset('storage/' . $img->path),
                             'caption' => $img->caption,
@@ -318,6 +329,7 @@ class ArticleController extends BaseController
      *             @OA\Property(property="cover_image", type="string", nullable=true, example="http://example.com/storage/covers/image.jpg"),
      *             @OA\Property(property="title", type="string", example="Mon Article"),
      *             @OA\Property(property="content", type="string", example="Contenu de l'article..."),
+     *             @OA\Property(property="category", type="string", example="education", description="Article category"),
      *             @OA\Property(property="gallery", type="array", @OA\Items(
      *                 @OA\Property(property="url", type="string", example="http://example.com/storage/article_gallery/image.jpg"),
      *                 @OA\Property(property="caption", type="string", nullable=true, example="Description de l'image")

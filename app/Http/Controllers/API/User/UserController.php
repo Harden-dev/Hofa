@@ -233,7 +233,12 @@ class UserController extends BaseController
     public function store(UserFormRequest $request)
     {
         $data = $request->all();
-        $data['slug'] = 'USER-' . Str::uuid();
+        if (isset($data['role']) && $data['role'] === 'admin') {
+            $data['slug'] = 'ADM-' . Str::uuid();
+        } else {
+            $data['slug'] = 'USER-' . Str::uuid();
+        }
+
         try {
             $user = User::create($data);
 

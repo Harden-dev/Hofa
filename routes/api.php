@@ -69,11 +69,11 @@ Route::prefix('v1')->group(function () {
         Route::delete('type-benevoles/{typeBenevole}', [TypeBenevoleController::class, 'desactivate']);
 
         // users route
-        Route::get('users', [UserController::class, 'index']);
-        Route::post('users', [UserController::class, 'store']);
-        Route::get('users/{user}', [UserController::class, 'show']);
-        Route::put('users/{user}', [UserController::class, 'update']);
-        Route::delete('users/{user}', [UserController::class, 'desactivate']);
+        Route::get('users', [UserController::class, 'index'])->middleware('role');
+        Route::post('users', [UserController::class, 'store'])->middleware('role');
+        Route::get('users/{user}', [UserController::class, 'show'])->middleware('role');
+        Route::put('users/{user}', [UserController::class, 'update'])->middleware('role');
+        Route::delete('users/{user}', [UserController::class, 'desactivate'])->middleware('role');
 
         // article
         Route::post('/articles', [ArticleController::class, 'store']);

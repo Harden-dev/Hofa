@@ -16,6 +16,7 @@ class ArticleTranslation extends Model
         'title',
         'content',
         'description',
+        'category',
         'article_id',
     ];
 

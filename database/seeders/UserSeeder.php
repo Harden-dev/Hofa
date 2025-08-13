@@ -19,10 +19,22 @@ class UserSeeder extends Seeder
         //
         DB::table('users')->insert([
             'id' => Str::ulid(),
-            'slug' => 'ADM-'. Str::uuid(),
+            'slug' => 'USER-'. Str::uuid(),
             'name' => 'Admin',
             'email' => 'admin@localhost.ci',
             'password' => Hash::make('password'),
+            'role' => 'admin',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('users')->insert([
+            'id' => Str::ulid(),
+            'slug' => 'USER-'. Str::uuid(),
+            'name' => 'user',
+            'email' => 'user@localhost.ci',
+            'password' => Hash::make('password'),
+            'role' => 'user',
             'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),
