@@ -24,7 +24,7 @@ class EnfilerFormRequest extends FormRequest
     {
         return [
             'type' => ['required', Rule::in(['individual', 'company'])],
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'bossName' => 'nullable|string|max:255',
             'donationType' => 'required|string|max:100',
             'phone' => 'required|string|max:20',
@@ -44,7 +44,6 @@ class EnfilerFormRequest extends FormRequest
         return [
             'type.required' => 'Le type de donateur est requis.',
             'type.in' => 'Le type doit être "individual" ou "company".',
-            'name.required' => 'Le nom est requis.',
             'name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
             'bossName.max' => 'Le nom du responsable ne peut pas dépasser 255 caractères.',
             'donationType.required' => 'Le type de don est requis.',

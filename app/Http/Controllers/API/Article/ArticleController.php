@@ -412,7 +412,7 @@ class ArticleController extends BaseController
      *                 @OA\Property(property="content", type="string", example="Nouveau contenu...", description="New article content in French"),
      *                 @OA\Property(property="cover_image", type="file", format="binary", description="New cover image (max 2MB)"),
      *                 @OA\Property(property="gallery[]", type="array", @OA\Items(type="file", format="binary"), description="Additional gallery images (max 2MB each)"),
-     *                 @OA\Property(property="captions[]", type="array", @OA\Items(type="string"), description="Captions for new gallery images")
+     *                 @OA\Property(property="category", type="string", example="education", description="Article category")
      *             )
      *         )
      *     ),
