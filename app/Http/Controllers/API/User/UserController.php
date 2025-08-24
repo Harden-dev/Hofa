@@ -380,10 +380,14 @@ class UserController extends BaseController
     public function desactivate(User $user)
     {
         try {
-            $user->is_active = false;
+            if($user->is_active){
+                $user->is_active = false;
+            }else{
+                $user->is_active = true;
+            }
             $user->save();
+          //  Mail::to($user->email)->send(new UserMail($user, $user->password, $user->is_active));
 
-            //  Mail::to($user->email)->send(new UserMail($user));
             return $this->sendResponse([], 'User deleted successfully');
         } catch (Exception $th) {
             Log::info("Error deleting user: " . $th->getMessage());
