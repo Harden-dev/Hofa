@@ -655,7 +655,7 @@ class MemberController extends BaseController
             $member->update([
                 'is_approved' => true,
                 'is_rejected' => false,
-                'is_active' => true, // Activer le compte quand approuvé
+                'is_active' => true,
                 'approved_at' => now(),
                 'rejected_at' => null,
                 'rejection_reason' => null
@@ -778,7 +778,7 @@ class MemberController extends BaseController
             $member->update([
                 'is_approved' => false,
                 'is_rejected' => true,
-                'is_active' => false, // Garder le compte inactif quand rejeté
+                'is_active' => false,
                 'rejected_at' => now(),
                 'approved_at' => null,
                 'rejection_reason' => $request->rejection_reason

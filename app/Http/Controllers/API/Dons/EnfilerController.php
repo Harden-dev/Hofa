@@ -609,14 +609,13 @@ class EnfilerController extends BaseController
             }
 
             // Mettre à jour le statut de rejet
-            $enfiler->update([
-                'is_approved' => false,
-                'is_rejected' => true,
-                'is_active' => false,
-                'rejected_at' => now(),
-                'approved_at' => null,
-                'rejection_reason' => $request->rejection_reason
-            ]);
+            $enfiler->is_rejected = true;
+            $enfiler->is_active = true;
+            $enfiler->rejected_at = now();
+            $enfiler->rejection_reason = $request->rejection_reason;
+            $enfiler->save();
+
+            Log::info("Don rejeté avec succès: ", $enfiler->toArray());
 
             return $this->sendResponse([
                 'id' => $enfiler->id,
