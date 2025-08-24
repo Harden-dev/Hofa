@@ -6,9 +6,11 @@ use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UserFormRequest;
 use App\Http\Resources\User\UserResource;
+use App\Mail\UserMail;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -238,10 +240,13 @@ class UserController extends BaseController
         } else {
             $data['slug'] = 'USER-' . Str::uuid();
         }
+        $data['password'] = Hash::make(Str::random(10));
 
         try {
             $user = User::create($data);
 
+            Mail::to($user->email)->send(new UserMail($user));
+            Log::info("User created successfully: " . $user->email);
             return $this->sendResponse([], 'User created successfully', [], 201);
         } catch (Exception $th) {
             Log::info("Error creating user: " . $th->getMessage());
