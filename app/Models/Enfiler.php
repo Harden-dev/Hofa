@@ -22,12 +22,21 @@ class Enfiler extends Model
         'email',
         'motivation',
         'is_active',
+        'approved_at',
+        'rejected_at',
+        'rejection_reason',
+        'is_approved',
+        'is_rejected',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
+        'is_approved' => 'boolean',
+        'is_rejected' => 'boolean',
     ];
 
     // Scopes pour filtrer les dons
