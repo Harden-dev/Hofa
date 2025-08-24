@@ -481,7 +481,7 @@ class EnfilerController extends BaseController
             if (!$enfiler) {
                 return $this->sendError('Don non trouvé', [], 404);
             }
-            // Vérifier si le membre a déjà été traité
+            // Vérifier si le don a déjà été traité
             if ($enfiler->is_approved || $enfiler->is_rejected) {
                 return $this->sendError('Ce don a déjà été traité (approuvé ou rejeté)', [], 400);
             }
@@ -497,14 +497,14 @@ class EnfilerController extends BaseController
             ]);
 
 
-            // Email de notification au membre
+            // Email de notification au donateur
             try {
                 Mail::to($enfiler->email)->send(new EnfilerMail($enfiler, false, 'approved'));
             } catch (Exception $emailException) {
                 Log::warning("Approval email notification failed for enfiler {$enfiler->email}: " . $emailException->getMessage());
             }
 
-            // Email de notification à l'admin
+            // Email de notification à l'administrateur
             try {
                 Mail::to(env('MAIL_FROM_ADDRESS'))->send(new EnfilerMail($enfiler, true, 'approved'));
             } catch (Exception $adminEmailException) {

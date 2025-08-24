@@ -32,13 +32,6 @@ class EnfilerResource extends JsonResource
             'rejection_reason' => $this->rejection_reason,
             'is_approved' => $this->is_approved,
             'is_rejected' => $this->is_rejected,
-
-            // Accesseurs calculés
-            'full_name' => $this->full_name,
-            'display_name' => $this->display_name,
-            'status_text' => $this->status_text,
-            'donation_type_text' => $this->donation_type_text,
-            'type_text' => $this->type_text,
         ];
     }
 }
