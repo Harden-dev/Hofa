@@ -27,6 +27,11 @@ class EnfilerResource extends JsonResource
             'is_active' => $this->is_active,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'approved_at' => $this->approved_at,
+            'rejected_at' => $this->rejected_at,
+            'rejection_reason' => $this->rejection_reason,
+            'is_approved' => $this->is_approved,
+            'is_rejected' => $this->is_rejected,
 
             // Accesseurs calculés
             'full_name' => $this->full_name,
