@@ -240,12 +240,12 @@ class UserController extends BaseController
         } else {
             $data['slug'] = 'USER-' . Str::uuid();
         }
-        $data['password'] = Hash::make(Str::random(10));
-
+        $plainPassword = Str::random(10);
+        $data['password'] = Hash::make($plainPassword);
         try {
             $user = User::create($data);
 
-            Mail::to($user->email)->send(new UserMail($user));
+            Mail::to($user->email)->send(new UserMail($user, $plainPassword, true));
             Log::info("User created successfully: " . $user->email);
             return $this->sendResponse([], 'User created successfully', [], 201);
         } catch (Exception $th) {

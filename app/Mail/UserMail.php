@@ -14,19 +14,17 @@ class UserMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
     public $user;
-    public function __construct(User $user)
+    public $password;
+    public $isNewUser;
+
+    public function __construct(User $user, $password, $isNewUser = true)
     {
-        //
         $this->user = $user;
+        $this->password = $password; // Mot de passe en clair
+        $this->isNewUser = $isNewUser;
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -34,24 +32,18 @@ class UserMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
             view: 'emails.user_mail',
             with: [
                 'user' => $this->user,
+                'password' => $this->password,
+                'isNewUser' => $this->isNewUser
             ]
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];
