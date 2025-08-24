@@ -71,7 +71,7 @@ class ArticleController extends BaseController
             'cover_image' => 'nullable|image|max:2048',
             'gallery.*' => 'nullable|image|max:2048',
             'gallery' => 'nullable|array',
-            'category' => 'required|string|in:education,santé,formation,humanitaire,developpement_communautaire,actions_sociales,insertion,autre',
+            'category' => 'required|string|in:education,sante,formation,humanitaire,developpement_communautaire,actions_sociales,insertion,autre',
         ]);
 
         // Génération du slug unique

@@ -58,5 +58,27 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
 
+        $exceptions->render(function (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Token has expired',
+                    'error' => 'Token Expired',
+                    'status' => 401
+                ], 401);
+            }
 
+            return redirect()->guest(route('login'));
+        });
+
+        $exceptions->render(function (\Tymon\JWTAuth\Exceptions\JWTException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Token error',
+                    'error' => 'Unauthorized',
+                    'status' => 401
+                ], 401);
+            }
+
+            return redirect()->guest(route('login'));
+        });
     })->create();

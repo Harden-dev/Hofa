@@ -271,6 +271,7 @@ class AuthController extends Controller
         }
         try {
             $user->password = Hash::make($request->new_password);
+            $user->is_password_modified = true;
             $user->save();
 
             Log::alert('le mot de passe a été modifié avec succès');

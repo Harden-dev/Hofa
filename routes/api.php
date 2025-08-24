@@ -50,6 +50,8 @@ Route::prefix('v1')->group(function () {
         Route::delete('dons/{enfiler}', [EnfilerController::class, 'desactivate']);
         Route::patch('dons/{enfiler}/activate', [EnfilerController::class, 'activate']);
         Route::patch('dons/{enfiler}/toggle-active', [EnfilerController::class, 'toggleActive']);
+        Route::patch('dons/{enfiler}/approve', [EnfilerController::class, 'approve']);
+        Route::patch('dons/{enfiler}/reject', [EnfilerController::class, 'reject']);
 
         // member route
         Route::get('membres', [MemberController::class, 'index']);

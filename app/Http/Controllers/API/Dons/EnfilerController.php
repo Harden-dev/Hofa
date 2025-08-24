@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Tag(
@@ -470,6 +471,166 @@ class EnfilerController extends BaseController
         } catch (Exception $th) {
             Log::error("Error toggling enfiler status: " . $th->getMessage());
             return $this->sendError('Erreur lors du basculement du statut');
+        }
+    }
+
+    // approve a don
+    public function approve(Request $request, Enfiler $enfiler)
+    {
+        try {
+            if (!$enfiler) {
+                return $this->sendError('Don non trouvé', [], 404);
+            }
+            // Vérifier si le membre a déjà été traité
+            if ($enfiler->is_approved || $enfiler->is_rejected) {
+                return $this->sendError('Ce don a déjà été traité (approuvé ou rejeté)', [], 400);
+            }
+
+            // Mettre à jour le statut d'approbation
+            $enfiler->update([
+                'is_approved' => true,
+                'is_rejected' => false,
+                'is_active' => true,
+                'approved_at' => now(),
+                'rejected_at' => null,
+                'rejection_reason' => null
+            ]);
+
+
+            // Email de notification au membre
+            try {
+                Mail::to($enfiler->email)->send(new EnfilerMail($enfiler, false, 'approved'));
+            } catch (Exception $emailException) {
+                Log::warning("Approval email notification failed for enfiler {$enfiler->email}: " . $emailException->getMessage());
+            }
+
+            // Email de notification à l'admin
+            try {
+                Mail::to(env('MAIL_FROM_ADDRESS'))->send(new EnfilerMail($enfiler, true, 'approved'));
+            } catch (Exception $adminEmailException) {
+                Log::warning("Admin approval notification failed: " . $adminEmailException->getMessage());
+            }
+
+            return $this->sendResponse([
+                'id' => $enfiler->id,
+                'is_approved' => $enfiler->is_approved,
+                'is_active' => $enfiler->is_active,
+                'approved_at' => $enfiler->approved_at
+            ], 'Don approuvé avec succès');
+
+        } catch (Exception $th) {
+            Log::error("Error approving enfiler {$enfiler->id}: " . $th->getMessage());
+            return $this->sendError('Erreur lors de l\'approbation du don');
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/v1/dons/{enfiler}/reject",
+     *     operationId="rejectEnfiler",
+     *     tags={"Dons"},
+     *     summary="Rejeter un don",
+     *     description="Rejeter la demande d'inscription d'un don",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="enfiler",
+     *         in="path",
+     *         description="ID du don",
+     *         required=true,
+     *         @OA\Schema(type="string", example="01jywbsemp4vdwx02h17z5mgah")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"rejection_reason"},
+     *             @OA\Property(property="rejection_reason", type="string", example="Informations incomplètes", description="Raison du rejet"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Don rejeté avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Don rejeté avec succès"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", example="01jywbsemp4vdwx02h17z5mgah"),
+     *                 @OA\Property(property="is_rejected", type="boolean", example=true),
+     *                 @OA\Property(property="is_active", type="boolean", example=false),
+     *                 @OA\Property(property="rejected_at", type="string", format="date-time", example="2025-08-01T10:30:00.000000Z"),
+     *                 @OA\Property(property="rejection_reason", type="string", example="Informations incomplètes")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Don non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Don non trouvé")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Don déjà approuvé ou rejeté",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Ce don a déjà été traité")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Données de validation invalides",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="La raison du rejet est requise")
+     *         )
+     *     )
+     * )
+     */
+    public function reject(Request $request, Enfiler $enfiler)
+    {
+        try {
+            if (!$enfiler) {
+                return $this->sendError('Don non trouvé', [], 404);
+            }
+
+            // Validation de la raison du rejet
+            $request->validate([
+                'rejection_reason' => 'required|string|max:500'
+            ], [
+                'rejection_reason.required' => 'La raison du rejet est requise',
+                'rejection_reason.string' => 'La raison du rejet doit être une chaîne de caractères',
+                'rejection_reason.max' => 'La raison du rejet ne peut pas dépasser 500 caractères'
+            ]);
+
+            // Vérifier si le membre a déjà été traité
+            if ($enfiler->is_approved || $enfiler->is_rejected) {
+                return $this->sendError('Ce don a déjà été traité (approuvé ou rejeté)');
+            }
+
+            // Mettre à jour le statut de rejet
+            $enfiler->update([
+                'is_approved' => false,
+                'is_rejected' => true,
+                'is_active' => false,
+                'rejected_at' => now(),
+                'approved_at' => null,
+                'rejection_reason' => $request->rejection_reason
+            ]);
+
+            return $this->sendResponse([
+                'id' => $enfiler->id,
+                'is_rejected' => $enfiler->is_rejected,
+                'is_active' => $enfiler->is_active,
+                'rejected_at' => $enfiler->rejected_at,
+                'rejection_reason' => $enfiler->rejection_reason
+            ], 'Don rejeté avec succès');
+
+        } catch (ValidationException $e) {
+            return $this->sendError('Erreur de validation', $e->errors(), 422);
+        } catch (Exception $th) {
+            Log::error("Error rejecting enfiler {$enfiler->id}: " . $th->getMessage());
+            return $this->sendError('Erreur lors du rejet du don');
         }
     }
 }

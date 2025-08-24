@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('locale');
             $table->string('title');
             $table->text('content');
-            $table->enum('category', ['education', 'santé', 'formation', 'humanitaire','developpement_communautaire', ' actions_sociales ', 'insertion ', 'autre']);
+            $table->enum('category', ['education', 'sante', 'formation', 'humanitaire','developpement_communautaire', ' actions_sociales ', 'insertion ', 'autre']);
             $table->foreign('article_id')->references('id')->on('articles');
             $table->timestamps();
         });

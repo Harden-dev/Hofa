@@ -13,6 +13,11 @@ class Article extends Model
     protected $table = 'articles';
 
     protected $fillable = ['slug', 'cover_image', 'is_active'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     public function translations()
     {
         return $this->hasMany(ArticleTranslation::class);

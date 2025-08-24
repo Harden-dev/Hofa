@@ -661,19 +661,17 @@ class MemberController extends BaseController
                 'rejection_reason' => null
             ]);
 
-            // Message personnalisé optionnel
-            $customMessage = $request->input('custom_message');
 
             // Email de notification au membre
             try {
-                Mail::to($member->email)->send(new MemberNotification($member, false, 'approved', $customMessage));
+                Mail::to($member->email)->send(new MemberNotification($member, false, 'approved'));
             } catch (Exception $emailException) {
                 Log::warning("Approval email notification failed for member {$member->email}: " . $emailException->getMessage());
             }
 
             // Email de notification à l'admin
             try {
-                Mail::to(env('MAIL_FROM_ADDRESS'))->send(new MemberNotification($member, true, 'approved', $customMessage));
+                Mail::to(env('MAIL_FROM_ADDRESS'))->send(new MemberNotification($member, true, 'approved'));
             } catch (Exception $adminEmailException) {
                 Log::warning("Admin approval notification failed: " . $adminEmailException->getMessage());
             }
