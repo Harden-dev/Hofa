@@ -23,12 +23,20 @@ class UserFormRequest extends FormRequest
     {
         return [
             //
-            "name" => "required",
-            "email" => "required",
-            "role"=>"required",
-            "job"=>"nullable",
-            "phone"=>"nullable",
+            "name" => "required|string|max:255",
+            "email" => "required|email|unique:users,email",
+            "role"=>"required|in:admin,user",
+            "job"=>"nullable|string|max:255",
+            "phone"=>"nullable|string|max:15",
 
+        ];[
+            "name.required" => "Le nom est requis",
+            "email.required" => "L'email est requis",
+            "email.unique" => "L'email existe déjà",
+            "role.required" => "Le rôle est requis",
+            "job.string" => "Le job doit être une chaîne de caractères",
+            "phone.string" => "Le téléphone doit être une chaîne de caractères",
+            "phone.max" => "Le téléphone doit contenir au maximum 15 caractères",
         ];
     }
 }

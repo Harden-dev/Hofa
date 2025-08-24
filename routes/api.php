@@ -75,7 +75,7 @@ Route::prefix('v1')->group(function () {
         Route::post('users', [UserController::class, 'store'])->middleware('role');
         Route::get('users/{user}', [UserController::class, 'show'])->middleware('role');
         Route::put('users/{user}', [UserController::class, 'update'])->middleware('role');
-        Route::delete('users/{user}', [UserController::class, 'desactivate'])->middleware('role');
+        Route::patch('users/{user}', [UserController::class, 'desactivate'])->middleware('role');
 
         // article
         Route::post('/articles', [ArticleController::class, 'store']);

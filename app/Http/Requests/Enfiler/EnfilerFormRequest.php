@@ -31,6 +31,7 @@ class EnfilerFormRequest extends FormRequest
             'email' => 'required|email|max:255',
             'motivation' => 'nullable|string|max:1000',
             'is_active' => 'boolean',
+
         ];
     }
 
