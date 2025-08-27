@@ -4,12 +4,14 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Mail\PasswordResetMail;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -96,6 +98,19 @@ class AuthController extends Controller
 
         if (!$token = Auth::guard('api')->attempt($credentials)) {
             return response()->json(['error' => 'Email ou mot de passe incorrect'], 401);
+        }
+
+        $user = Auth::guard('api')->user();
+
+        // Vérifier si l'utilisateur doit changer son mot de passe temporaire
+        if (!$user->is_password_modified) {
+            return response()->json([
+                'error' => 'Vous devez changer votre mot de passe temporaire',
+                'requires_password_change' => true,
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => config('jwt.ttl') * 60
+            ], 200);
         }
 
         return $this->respondWithToken($token);
@@ -357,11 +372,15 @@ class AuthController extends Controller
             $newPassword = Str::random(8);
 
             $user->password = Hash::make($newPassword);
+            $user->is_password_modified = false; // L'utilisateur devra changer le mot de passe
             $user->save();
 
-            // FacadesMail::to($user->email)->send(new ResetMail($user, $newPassword));
+            // Envoyer l'email avec le mot de passe temporaire
+            Mail::to($user->email)->send(new PasswordResetMail($user, $newPassword));
 
-            return response()->json(['message' => 'Un nouveau mot de passe a été envoyé à votre adresse e-mail'], 200);
+            Log::info('Mot de passe temporaire envoyé à l\'utilisateur: ' . $user->email);
+
+            return response()->json(['message' => 'Un nouveau mot de passe temporaire a été envoyé à votre adresse e-mail'], 200);
         } catch (\Exception $th) {
 
             Log::error('Une erreur est survenue lors de la réinitialisation du mot de passe : ' . $th->getMessage());
