@@ -103,7 +103,9 @@ class AuthController extends Controller
         $user = Auth::guard('api')->user();
 
         // Vérifier si l'utilisateur doit changer son mot de passe temporaire
+
         if (!$user->is_password_modified) {
+            Log::info('Utilisateur non connecté: ' . $user->email, 'mot de passe non modifié');
             return response()->json([
                 'error' => 'Vous devez changer votre mot de passe temporaire',
                 'requires_password_change' => true,
