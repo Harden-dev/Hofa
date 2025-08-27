@@ -17,7 +17,7 @@ Route::prefix('v1')->group(function () {
 
     // login route
     Route::post('login', [AuthController::class, 'login']);
-
+    Route::post('reset-password', [AuthController::class, 'ResetPasswordMail']);
     // contact route
     Route::post('contacts', [ContactController::class, 'store']);
 
@@ -32,6 +32,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/articles/{slug}', [ArticleController::class, 'show']);
 
     Route::middleware('auth:api')->group(function () {
+        // auth route
+        Route::get('me', [AuthController::class, 'me']);
+        Route::post('change-password', [AuthController::class, 'changePassword']);
+
         // contact route
         Route::get('contacts', [ContactController::class, 'index']);
         Route::delete('contacts/{contact}', [ContactController::class, 'desactivate']);

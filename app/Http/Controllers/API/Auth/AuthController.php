@@ -254,29 +254,28 @@ class AuthController extends Controller
                 'string',
                 'min:6',
                 'confirmed',
-                function ($attribute, $value, $fail) use ($request) {
+                function ($attribute, $value, $fail) {
                     // Vérifie si le nouveau mot de passe est différent de l'ancien
                     if (Hash::check($value, Auth::user()->password)) {
-                        return response()->json(['error' => 'Le nouveau mot de passe doit être différent de l\'ancien mot de passe.'], 403);
+                        $fail('Le nouveau mot de passe doit être différent de l\'ancien mot de passe.');
                     }
                 }
             ],
-
         ]);
 
         $user = Auth::guard('api')->user();
         if (!Hash::check($request->current_password, $user->password)) {
-            // Log::info('le mot de passe est incorrect');
-            return response()->json(['error' => 'le mot de passe est incorrect'], 401);
+            return response()->json(['error' => 'Le mot de passe actuel est incorrect'], 401);
         }
+
         try {
             $user->password = Hash::make($request->new_password);
             $user->is_password_modified = true;
             $user->save();
 
-            Log::alert('le mot de passe a été modifié avec succès');
+            Log::info('Le mot de passe a été modifié avec succès pour l\'utilisateur: ' . $user->id);
 
-            return response()->json(['message' => 'le mot de passe a été modifié avec succès'], 200);
+            return response()->json(['message' => 'Le mot de passe a été modifié avec succès'], 200);
         } catch (Exception $e) {
             Log::error('Erreur lors de la modification du mot de passe : ' . $e->getMessage());
             return response()->json(['error' => 'Une erreur est survenue lors de la modification du mot de passe'], 500);
